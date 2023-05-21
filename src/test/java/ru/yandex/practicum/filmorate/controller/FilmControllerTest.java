@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exeptions.ValidationException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import javax.validation.ConstraintViolation;
@@ -36,8 +36,8 @@ public class FilmControllerTest {
         if (violations.isEmpty()) {
             controller.addFilm(film);
         }
-        assertTrue(controller.films.containsValue(film));
-        assertEquals(controller.films.get(1), film);
+        assertTrue(controller.getFilms().containsValue(film));
+        assertEquals(controller.getFilms().get(1), film);
     }
 
     @Test
@@ -47,14 +47,14 @@ public class FilmControllerTest {
         if (violations.isEmpty()) {
             controller.addFilm(film);
         }
-        assertFalse(controller.films.containsValue(film));
+        assertFalse(controller.getFilms().containsValue(film));
 
         film.setName(null);
         violations = validator.validate(film);
         if (violations.isEmpty()) {
             controller.addFilm(film);
         }
-        assertFalse(controller.films.containsValue(film));
+        assertFalse(controller.getFilms().containsValue(film));
     }
 
     @Test
@@ -67,7 +67,7 @@ public class FilmControllerTest {
         if (violations.isEmpty()) {
             controller.addFilm(film);
         }
-        assertFalse(controller.films.containsValue(film));
+        assertFalse(controller.getFilms().containsValue(film));
     }
 
     @Test
@@ -77,14 +77,14 @@ public class FilmControllerTest {
         if (violations.isEmpty()) {
             controller.addFilm(film);
         }
-        assertFalse(controller.films.containsValue(film));
+        assertFalse(controller.getFilms().containsValue(film));
 
         film.setReleaseDate(LocalDate.now().plusDays(1));
         violations = validator.validate(film);
         if (violations.isEmpty()) {
             controller.addFilm(film);
         }
-        assertFalse(controller.films.containsValue(film));
+        assertFalse(controller.getFilms().containsValue(film));
     }
 
     @Test
@@ -94,18 +94,18 @@ public class FilmControllerTest {
         if (violations.isEmpty()) {
             controller.addFilm(film);
         }
-        assertFalse(controller.films.containsValue(film));
+        assertFalse(controller.getFilms().containsValue(film));
 
         film.setDuration(-1);
         violations = validator.validate(film);
         if (violations.isEmpty()) {
             controller.addFilm(film);
         }
-        assertFalse(controller.films.containsValue(film));
+        assertFalse(controller.getFilms().containsValue(film));
     }
 
     @Test
-    public void updateFilmWithCorrectFilmTest() throws ValidationException {
+    public void updateFilmWithCorrectFilmTest() {
         controller.addFilm(film);
         Film filmToUpdate = new Film();
         filmToUpdate.setId(1);
@@ -117,14 +117,14 @@ public class FilmControllerTest {
         if (violations.isEmpty()) {
             controller.updateFilm(filmToUpdate);
         }
-        assertEquals(controller.films.get(1).getName(), filmToUpdate.getName());
-        assertEquals(controller.films.get(1).getDescription(), filmToUpdate.getDescription());
-        assertEquals(controller.films.get(1).getReleaseDate(), filmToUpdate.getReleaseDate());
-        assertEquals(controller.films.get(1).getDuration(), filmToUpdate.getDuration());
+        assertEquals(controller.getFilms().get(1).getName(), filmToUpdate.getName());
+        assertEquals(controller.getFilms().get(1).getDescription(), filmToUpdate.getDescription());
+        assertEquals(controller.getFilms().get(1).getReleaseDate(), filmToUpdate.getReleaseDate());
+        assertEquals(controller.getFilms().get(1).getDuration(), filmToUpdate.getDuration());
     }
 
     @Test
-    public void updateFilmWithNotCorrectFilmNameTest() throws ValidationException {
+    public void updateFilmWithNotCorrectFilmNameTest() {
         controller.addFilm(film);
         Film filmToUpdate = new Film();
         filmToUpdate.setId(1);
@@ -136,18 +136,18 @@ public class FilmControllerTest {
         if (violations.isEmpty()) {
             controller.updateFilm(filmToUpdate);
         }
-        assertNotEquals("", controller.films.get(1).getName());
+        assertNotEquals("", controller.getFilms().get(1).getName());
 
         filmToUpdate.setName(null);
         violations = validator.validate(filmToUpdate);
         if (violations.isEmpty()) {
             controller.updateFilm(filmToUpdate);
         }
-        assertNotNull(controller.films.get(1).getName());
+        assertNotNull(controller.getFilms().get(1).getName());
     }
 
     @Test
-    public void updateFilmWithNotCorrectFilmDescriptionTest() throws ValidationException {
+    public void updateFilmWithNotCorrectFilmDescriptionTest() {
         controller.addFilm(film);
         Film filmToUpdate = new Film();
         filmToUpdate.setId(1);
@@ -162,11 +162,11 @@ public class FilmControllerTest {
         if (violations.isEmpty()) {
             controller.updateFilm(filmToUpdate);
         }
-        assertNotEquals("", controller.films.get(1).getName());
+        assertNotEquals("", controller.getFilms().get(1).getName());
     }
 
     @Test
-    public void updateFilmWithNotCorrectFilmReleaseDateTest() throws ValidationException {
+    public void updateFilmWithNotCorrectFilmReleaseDateTest() {
         controller.addFilm(film);
         Film filmToUpdate = new Film();
         filmToUpdate.setId(1);
@@ -178,18 +178,18 @@ public class FilmControllerTest {
         if (violations.isEmpty()) {
             controller.updateFilm(filmToUpdate);
         }
-        assertNotEquals(filmToUpdate.getReleaseDate(), controller.films.get(1).getReleaseDate());
+        assertNotEquals(filmToUpdate.getReleaseDate(), controller.getFilms().get(1).getReleaseDate());
 
         filmToUpdate.setReleaseDate(LocalDate.now().plusDays(1));
         violations = validator.validate(filmToUpdate);
         if (violations.isEmpty()) {
             controller.updateFilm(filmToUpdate);
         }
-        assertNotEquals(filmToUpdate.getReleaseDate(), controller.films.get(1).getReleaseDate());
+        assertNotEquals(filmToUpdate.getReleaseDate(), controller.getFilms().get(1).getReleaseDate());
     }
 
     @Test
-    public void updateFilmWithNotCorrectFilmDurationTest() throws ValidationException {
+    public void updateFilmWithNotCorrectFilmDurationTest() {
         controller.addFilm(film);
         Film filmToUpdate = new Film();
         filmToUpdate.setId(1);
@@ -201,18 +201,18 @@ public class FilmControllerTest {
         if (violations.isEmpty()) {
             controller.updateFilm(filmToUpdate);
         }
-        assertNotEquals(0, controller.films.get(1).getDuration());
+        assertNotEquals(0, controller.getFilms().get(1).getDuration());
 
         filmToUpdate.setDuration(-1);
         violations = validator.validate(filmToUpdate);
         if (violations.isEmpty()) {
             controller.updateFilm(filmToUpdate);
         }
-        assertNotEquals(-1, controller.films.get(1).getDuration());
+        assertNotEquals(-1, controller.getFilms().get(1).getDuration());
     }
 
     @Test
-    public void allFilmsTest() throws ValidationException {
+    public void allFilmsTest() {
         assertTrue(controller.allFilms().isEmpty());
         controller.addFilm(film);
         assertTrue(controller.allFilms().contains(film));

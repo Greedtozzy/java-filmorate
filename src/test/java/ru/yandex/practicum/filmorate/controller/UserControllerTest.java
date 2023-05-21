@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exeptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.ConstraintViolation;
@@ -32,79 +31,79 @@ public class UserControllerTest {
     }
 
     @Test
-    public void createUserWithCorrectUserTest() throws ValidationException {
+    public void createUserWithCorrectUserTest() {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertTrue(controller.users.containsValue(user));
-        assertEquals(controller.users.get(1), user);
+        assertTrue(controller.getUsers().containsValue(user));
+        assertEquals(controller.getUsers().get(1), user);
     }
 
     @Test
-    public void createUserWithNotCorrectUsersEmailTest() throws ValidationException {
+    public void createUserWithNotCorrectUsersEmailTest() {
         user.setEmail("emailEmail");
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertFalse(controller.users.containsValue(user));
+        assertFalse(controller.getUsers().containsValue(user));
     }
 
     @Test
-    public void createUserWithNotCorrectUsersLoginTest() throws ValidationException {
+    public void createUserWithNotCorrectUsersLoginTest() {
         user.setLogin("");
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertFalse(controller.users.containsValue(user));
+        assertFalse(controller.getUsers().containsValue(user));
         user.setLogin("log in");
         violations = validator.validate(user);
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertFalse(controller.users.containsValue(user));
+        assertFalse(controller.getUsers().containsValue(user));
         user.setLogin(null);
         violations = validator.validate(user);
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertFalse(controller.users.containsValue(user));
+        assertFalse(controller.getUsers().containsValue(user));
     }
 
     @Test
-    public void createUserWithNotCorrectUsersBirthdayTest() throws ValidationException {
+    public void createUserWithNotCorrectUsersBirthdayTest() {
         user.setBirthday(LocalDate.now().plusDays(1));
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertFalse(controller.users.containsValue(user));
+        assertFalse(controller.getUsers().containsValue(user));
     }
 
     @Test
-    public void createUserWithBlankNameTest() throws ValidationException {
+    public void createUserWithBlankNameTest() {
         user.setName("");
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertEquals(user.getLogin(), controller.users.get(1).getName());
+        assertEquals(user.getLogin(), controller.getUsers().get(1).getName());
     }
 
     @Test
-    public void createUserWithNullNameTest() throws ValidationException {
+    public void createUserWithNullNameTest() {
         user.setName(null);
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertEquals(user.getLogin(), controller.users.get(1).getName());
+        assertEquals(user.getLogin(), controller.getUsers().get(1).getName());
     }
 
     @Test
-    public void updateUserWithCorrectUserTest() throws ValidationException {
+    public void updateUserWithCorrectUserTest() {
         controller.createUser(user);
         user.setName("anotherName");
         user.setLogin("anotherLogin");
@@ -115,14 +114,14 @@ public class UserControllerTest {
             controller.updateUser(user);
         }
 
-        assertEquals(controller.users.get(1).getName(), "anotherName");
-        assertEquals(controller.users.get(1).getLogin(), "anotherLogin");
-        assertEquals(controller.users.get(1).getBirthday(), LocalDate.of(2000, 1, 2));
-        assertEquals(controller.users.get(1).getEmail(), "anotherEmail@email.com");
+        assertEquals(controller.getUsers().get(1).getName(), "anotherName");
+        assertEquals(controller.getUsers().get(1).getLogin(), "anotherLogin");
+        assertEquals(controller.getUsers().get(1).getBirthday(), LocalDate.of(2000, 1, 2));
+        assertEquals(controller.getUsers().get(1).getEmail(), "anotherEmail@email.com");
     }
 
     @Test
-    public void updateUserWithNotCorrectUsersEmailTest() throws ValidationException {
+    public void updateUserWithNotCorrectUsersEmailTest() {
         controller.createUser(user);
         User userForUpdate = new User();
         userForUpdate.setId(1);
@@ -134,11 +133,11 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
         }
-        assertNotEquals("anotherEmailEmail.com", controller.users.get(1).getEmail());
+        assertNotEquals("anotherEmailEmail.com", controller.getUsers().get(1).getEmail());
     }
 
     @Test
-    public void updateUserWithNotCorrectUsersLoginTest() throws ValidationException {
+    public void updateUserWithNotCorrectUsersLoginTest() {
         controller.createUser(user);
         User userForUpdate = new User();
         userForUpdate.setId(1);
@@ -150,17 +149,17 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
         }
-        assertNotEquals("", controller.users.get(1).getLogin());
+        assertNotEquals("", controller.getUsers().get(1).getLogin());
         userForUpdate.setLogin("log in");
         violations = validator.validate(userForUpdate);
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
         }
-        assertNotEquals("", controller.users.get(1).getLogin());
+        assertNotEquals("", controller.getUsers().get(1).getLogin());
     }
 
     @Test
-    public void updateUserWithNotCorrectUsersBirthdayTest() throws ValidationException {
+    public void updateUserWithNotCorrectUsersBirthdayTest() {
         controller.createUser(user);
         User userForUpdate = new User();
         userForUpdate.setId(1);
@@ -172,11 +171,11 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
         }
-        assertNotEquals(controller.users.get(1).getBirthday(), LocalDate.now().plusDays(1));
+        assertNotEquals(controller.getUsers().get(1).getBirthday(), LocalDate.now().plusDays(1));
     }
 
     @Test
-    public void updateUserWithBlankNameTest() throws ValidationException {
+    public void updateUserWithBlankNameTest() {
         controller.createUser(user);
         User userForUpdate = new User();
         userForUpdate.setId(1);
@@ -188,11 +187,11 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
         }
-        assertEquals(userForUpdate.getLogin(), controller.users.get(1).getName());
+        assertEquals(userForUpdate.getLogin(), controller.getUsers().get(1).getName());
     }
 
     @Test
-    public void updateUserWithNullNameTest() throws ValidationException {
+    public void updateUserWithNullNameTest() {
         controller.createUser(user);
         User userForUpdate = new User();
         userForUpdate.setId(1);
@@ -204,11 +203,11 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
         }
-        assertEquals(userForUpdate.getLogin(), controller.users.get(1).getName());
+        assertEquals(userForUpdate.getLogin(), controller.getUsers().get(1).getName());
     }
 
     @Test
-    public void allUsersListTest() throws ValidationException {
+    public void allUsersListTest() {
         assertTrue(controller.allUsers().isEmpty());
         controller.createUser(user);
         assertTrue(controller.allUsers().contains(user));
