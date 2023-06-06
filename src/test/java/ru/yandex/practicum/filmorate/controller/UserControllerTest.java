@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -20,9 +23,8 @@ public class UserControllerTest {
 
     @BeforeEach
     public void testStartBeforeEach() {
-        controller = new UserController();
+        controller = new UserController(new UserService(new InMemoryUserStorage()));
         user = new User();
-        user.setId(1);
         user.setLogin("login");
         user.setName("name");
         user.setEmail("email@email.com");
@@ -36,8 +38,8 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertTrue(controller.getUsers().containsValue(user));
-        assertEquals(controller.getUsers().get(1), user);
+        assertTrue(controller.allUsers().contains(user));
+        assertEquals(controller.getUserById(1), user);
     }
 
     @Test
@@ -47,7 +49,7 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertFalse(controller.getUsers().containsValue(user));
+        assertFalse(controller.allUsers().contains(user));
     }
 
     @Test
@@ -57,19 +59,19 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertFalse(controller.getUsers().containsValue(user));
+        assertFalse(controller.allUsers().contains(user));
         user.setLogin("log in");
         violations = validator.validate(user);
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertFalse(controller.getUsers().containsValue(user));
+        assertFalse(controller.allUsers().contains(user));
         user.setLogin(null);
         violations = validator.validate(user);
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertFalse(controller.getUsers().containsValue(user));
+        assertFalse(controller.allUsers().contains(user));
     }
 
     @Test
@@ -79,7 +81,7 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertFalse(controller.getUsers().containsValue(user));
+        assertFalse(controller.allUsers().contains(user));
     }
 
     @Test
@@ -89,7 +91,7 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertEquals(user.getLogin(), controller.getUsers().get(1).getName());
+        assertEquals(user.getLogin(), controller.getUserById(1).getName());
     }
 
     @Test
@@ -99,7 +101,7 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.createUser(user);
         }
-        assertEquals(user.getLogin(), controller.getUsers().get(1).getName());
+        assertEquals(user.getLogin(), controller.getUserById(1).getName());
     }
 
     @Test
@@ -114,10 +116,10 @@ public class UserControllerTest {
             controller.updateUser(user);
         }
 
-        assertEquals(controller.getUsers().get(1).getName(), "anotherName");
-        assertEquals(controller.getUsers().get(1).getLogin(), "anotherLogin");
-        assertEquals(controller.getUsers().get(1).getBirthday(), LocalDate.of(2000, 1, 2));
-        assertEquals(controller.getUsers().get(1).getEmail(), "anotherEmail@email.com");
+        assertEquals(controller.getUserById(1).getName(), "anotherName");
+        assertEquals(controller.getUserById(1).getLogin(), "anotherLogin");
+        assertEquals(controller.getUserById(1).getBirthday(), LocalDate.of(2000, 1, 2));
+        assertEquals(controller.getUserById(1).getEmail(), "anotherEmail@email.com");
     }
 
     @Test
@@ -133,7 +135,7 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
         }
-        assertNotEquals("anotherEmailEmail.com", controller.getUsers().get(1).getEmail());
+        assertNotEquals("anotherEmailEmail.com", controller.getUserById(1).getEmail());
     }
 
     @Test
@@ -149,13 +151,13 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
         }
-        assertNotEquals("", controller.getUsers().get(1).getLogin());
+        assertNotEquals("", controller.getUserById(1).getLogin());
         userForUpdate.setLogin("log in");
         violations = validator.validate(userForUpdate);
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
         }
-        assertNotEquals("", controller.getUsers().get(1).getLogin());
+        assertNotEquals("", controller.getUserById(1).getLogin());
     }
 
     @Test
@@ -171,7 +173,7 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
         }
-        assertNotEquals(controller.getUsers().get(1).getBirthday(), LocalDate.now().plusDays(1));
+        assertNotEquals(controller.getUserById(1).getBirthday(), LocalDate.now().plusDays(1));
     }
 
     @Test
@@ -187,7 +189,7 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
         }
-        assertEquals(userForUpdate.getLogin(), controller.getUsers().get(1).getName());
+        assertEquals(userForUpdate.getLogin(), controller.getUserById(1).getName());
     }
 
     @Test
@@ -203,7 +205,7 @@ public class UserControllerTest {
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
         }
-        assertEquals(userForUpdate.getLogin(), controller.getUsers().get(1).getName());
+        assertEquals(userForUpdate.getLogin(), controller.getUserById(1).getName());
     }
 
     @Test
@@ -212,5 +214,102 @@ public class UserControllerTest {
         controller.createUser(user);
         assertTrue(controller.allUsers().contains(user));
         assertEquals(1, controller.allUsers().size());
+    }
+
+    @Test
+    public void getUserByIdTest() {
+        controller.createUser(user);
+        user.setId(1);
+        assertEquals(controller.getUserById(1), user);
+    }
+
+    @Test
+    public void getUserByInvalidId() {
+        assertThrows(RuntimeException.class, () -> controller.getUserById(-1));
+        assertThrows(RuntimeException.class, () -> controller.getUserById(5));
+    }
+
+    @Test
+    public void deleteUserTest() {
+        controller.createUser(user);
+        user.setId(1);
+        assertTrue(controller.allUsers().contains(user));
+        controller.deleteUser(1);
+        assertTrue(controller.allUsers().isEmpty());
+    }
+
+    @Test
+    public void deleteUserByInvalidId() {
+        assertThrows(RuntimeException.class, () -> controller.deleteUser(1));
+    }
+
+    @Test
+    public void addFriendTest() {
+        controller.createUser(user);
+        User anotherUser = new User();
+        anotherUser.setName("anotherName");
+        anotherUser.setLogin("anotherLogin");
+        anotherUser.setEmail("anotherEmail@email.com");
+        anotherUser.setBirthday(LocalDate.of(2000,1,1));
+        controller.createUser(anotherUser);
+        controller.addFriend(1, 2);
+        assertTrue(controller.getUserById(1).friendsList.contains(2));
+        assertTrue(controller.getUserById(2).friendsList.contains(1));
+    }
+
+    @Test
+    public void deleteFriendTest() {
+        controller.createUser(user);
+        User anotherUser = new User();
+        anotherUser.setName("anotherName");
+        anotherUser.setLogin("anotherLogin");
+        anotherUser.setEmail("anotherEmail@email.com");
+        anotherUser.setBirthday(LocalDate.of(2000,1,1));
+        controller.createUser(anotherUser);
+        controller.addFriend(1, 2);
+        controller.deleteFriend(1, 2);
+        assertTrue(controller.getUserById(1).friendsList.isEmpty());
+        assertTrue(controller.getUserById(2).friendsList.isEmpty());
+    }
+
+    @Test
+    public void listAllFriendsTest() {
+        controller.createUser(user);
+        User anotherUser = new User();
+        anotherUser.setName("anotherName");
+        anotherUser.setLogin("anotherLogin");
+        anotherUser.setEmail("anotherEmail@email.com");
+        anotherUser.setBirthday(LocalDate.of(2000,1,1));
+        controller.createUser(anotherUser);
+        User anotherUser1 = new User();
+        anotherUser1.setName("anotherName1");
+        anotherUser1.setLogin("anotherLogin1");
+        anotherUser1.setEmail("anotherEmail1@email.com");
+        anotherUser1.setBirthday(LocalDate.of(2000,1,1));
+        controller.createUser(anotherUser1);
+        controller.addFriend(1, 2);
+        controller.addFriend(1, 3);
+        assertTrue(controller.listAllFriends(1).contains(controller.getUserById(2))
+                && controller.listAllFriends(1).contains(controller.getUserById(3)));
+    }
+
+    @Test
+    public void commonFriendsTest() {
+        controller.createUser(user);
+        User anotherUser = new User();
+        anotherUser.setName("anotherName");
+        anotherUser.setLogin("anotherLogin");
+        anotherUser.setEmail("anotherEmail@email.com");
+        anotherUser.setBirthday(LocalDate.of(2000,1,1));
+        controller.createUser(anotherUser);
+        User anotherUser1 = new User();
+        anotherUser1.setName("anotherName1");
+        anotherUser1.setLogin("anotherLogin1");
+        anotherUser1.setEmail("anotherEmail1@email.com");
+        anotherUser1.setBirthday(LocalDate.of(2000,1,1));
+        controller.createUser(anotherUser1);
+        controller.addFriend(2, 3);
+        controller.addFriend(1, 3);
+        assertTrue(controller.commonFriends(1, 2).contains(controller.getUserById(3)));
     }
 }

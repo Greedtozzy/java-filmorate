@@ -5,11 +5,12 @@ import ru.yandex.practicum.filmorate.validators.CustomDateAnnotation;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class Film {
     private int id;
-
     @NotBlank
     private String name;
     @Size(max = 200)
@@ -21,4 +22,5 @@ public class Film {
     @NotNull
     @Positive
     private long duration;
+    public final Set<Integer> likes = new HashSet<>();
 }
