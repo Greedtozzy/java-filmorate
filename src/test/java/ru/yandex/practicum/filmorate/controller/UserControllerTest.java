@@ -252,8 +252,8 @@ public class UserControllerTest {
         anotherUser.setBirthday(LocalDate.of(2000,1,1));
         controller.createUser(anotherUser);
         controller.addFriend(1, 2);
-        assertTrue(controller.getUserById(1).friendsList.contains(2));
-        assertTrue(controller.getUserById(2).friendsList.contains(1));
+        assertTrue(controller.getUserById(1).getFriendsList().contains(2));
+        assertTrue(controller.getUserById(2).getFriendsList().contains(1));
     }
 
     @Test
@@ -267,8 +267,8 @@ public class UserControllerTest {
         controller.createUser(anotherUser);
         controller.addFriend(1, 2);
         controller.deleteFriend(1, 2);
-        assertTrue(controller.getUserById(1).friendsList.isEmpty());
-        assertTrue(controller.getUserById(2).friendsList.isEmpty());
+        assertTrue(controller.getUserById(1).getFriendsList().isEmpty());
+        assertTrue(controller.getUserById(2).getFriendsList().isEmpty());
     }
 
     @Test

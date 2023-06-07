@@ -247,7 +247,7 @@ public class FilmControllerTest {
         user.setBirthday(LocalDate.of(2000, 1, 1));
         userStorage.addUser(user);
         controller.addLike(1, 1);
-        assertTrue(controller.getFilmById(1).likes.contains(1));
+        assertTrue(controller.getFilmById(1).getLikes().contains(1));
     }
 
     @Test
@@ -260,9 +260,9 @@ public class FilmControllerTest {
         user.setBirthday(LocalDate.of(2000, 1, 1));
         userStorage.addUser(user);
         controller.addLike(1, 1);
-        assertTrue(controller.getFilmById(1).likes.contains(1));
+        assertTrue(controller.getFilmById(1).getLikes().contains(1));
         controller.deleteLike(1, 1);
-        assertTrue(controller.getFilmById(1).likes.isEmpty());
+        assertTrue(controller.getFilmById(1).getLikes().isEmpty());
     }
 
     @Test

@@ -37,17 +37,17 @@ public class FilmService {
 
     public void addLike(int userId, int filmId) {
         userStorage.getUserById(userId); // Проверка существования пользователя
-        filmStorage.getFilmById(filmId).likes.add(userId);
+        filmStorage.getFilmById(filmId).getLikes().add(userId);
     }
 
     public void deleteLike(int userId, int filmId) {
         userStorage.getUserById(userId); // Проверка существования пользователя
-        filmStorage.getFilmById(filmId).likes.remove(userId);
+        filmStorage.getFilmById(filmId).getLikes().remove(userId);
     }
 
     public List<Film> topFilms(int count) {
         return filmStorage.getListAllFilms().stream()
-                .sorted(Comparator.comparingInt(f0 -> f0.likes.size() * -1))
+                .sorted(Comparator.comparingInt(f0 -> f0.getLikes().size() * -1))
                 .limit(count)
                 .collect(Collectors.toList());
     }

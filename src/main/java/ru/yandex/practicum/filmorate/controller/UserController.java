@@ -13,7 +13,7 @@ import java.util.List;
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
-    UserService userService;
+    private final UserService userService;
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -51,21 +51,25 @@ public class UserController {
 
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable int id, @PathVariable int friendId) {
+        log.debug("User {} add user {} in friends", id, friendId);
         userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable int id, @PathVariable int friendId) {
+        log.debug("User {} delete user {} from friends", id, friendId);
         userService.deleteFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
     public List<User> listAllFriends(@PathVariable int id) {
+        log.debug("List all friends user {}", id);
         return userService.listAllFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> commonFriends(@PathVariable int id, @PathVariable int otherId) {
+        log.debug("List if common friends users {}, {}", id, otherId);
         return userService.commonFriends(id, otherId);
     }
 }

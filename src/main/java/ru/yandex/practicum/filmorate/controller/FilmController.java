@@ -12,7 +12,7 @@ import java.util.List;
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    FilmService filmService;
+    private final FilmService filmService;
 
     public FilmController(FilmService filmService) {
         this.filmService = filmService;
@@ -44,11 +44,13 @@ public class FilmController {
 
     @PutMapping("{id}/like/{userId}")
     public void addLike(@PathVariable int id, @PathVariable int userId) {
+        log.debug("Film by id {} has like from user {}", id, userId);
         filmService.addLike(userId, id);
     }
 
     @DeleteMapping("{id}/like/{userId}")
     public void deleteLike(@PathVariable int id, @PathVariable int userId) {
+        log.debug("Film by id {} delete like from user {}", id, userId);
         filmService.deleteLike(userId, id);
     }
 
