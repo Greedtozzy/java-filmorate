@@ -219,7 +219,6 @@ public class FilmDBStorage implements FilmStorage {
                         genre.setId(rs.getInt("genre_id"));
                         film.getGenres().add(genre);
                     }
-//                        film.getLikes().add(rs.getInt("user_id"));
                 }
                 if (!films.stream()
                         .map(Film::getId)
