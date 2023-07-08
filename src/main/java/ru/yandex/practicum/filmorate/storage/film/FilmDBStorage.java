@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 public class FilmDBStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+
     @Override
     public Film getFilmById(int id) {
         try {
