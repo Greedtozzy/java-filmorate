@@ -23,11 +23,7 @@ public class UserControllerTest {
     @BeforeEach
     public void testStartBeforeEach() {
         controller = new UserController(new UserService(new InMemoryUserStorage()));
-        user = new User();
-        user.setLogin("login");
-        user.setName("name");
-        user.setEmail("email@email.com");
-        user.setBirthday(LocalDate.of(2000, 1, 1));
+        user = new User(1, "email@email.com", "login", "name", LocalDate.of(2000, 1, 1));
         validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
@@ -124,12 +120,7 @@ public class UserControllerTest {
     @Test
     public void updateUserWithNotCorrectUsersEmailTest() {
         controller.createUser(user);
-        User userForUpdate = new User();
-        userForUpdate.setId(1);
-        userForUpdate.setName("anotherName");
-        userForUpdate.setLogin("anotherLogin");
-        userForUpdate.setEmail("anotherEmailEmail.com");
-        userForUpdate.setBirthday(LocalDate.of(2000,1,1));
+        User userForUpdate = new User(1, "anotherEmail@Email.com", "anotherLogin", "anotherName", LocalDate.of(2000,1,1));
         Set<ConstraintViolation<User>> violations = validator.validate(userForUpdate);
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
@@ -140,12 +131,7 @@ public class UserControllerTest {
     @Test
     public void updateUserWithNotCorrectUsersLoginTest() {
         controller.createUser(user);
-        User userForUpdate = new User();
-        userForUpdate.setId(1);
-        userForUpdate.setName("anotherName");
-        userForUpdate.setLogin("");
-        userForUpdate.setEmail("anotherEmail@email.com");
-        userForUpdate.setBirthday(LocalDate.of(2000,1,1));
+        User userForUpdate = new User(1, "anotherEmail@Email.com", "", "anotherName", LocalDate.of(2000,1,1));
         Set<ConstraintViolation<User>> violations = validator.validate(userForUpdate);
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
@@ -162,12 +148,7 @@ public class UserControllerTest {
     @Test
     public void updateUserWithNotCorrectUsersBirthdayTest() {
         controller.createUser(user);
-        User userForUpdate = new User();
-        userForUpdate.setId(1);
-        userForUpdate.setName("anotherName");
-        userForUpdate.setLogin("anotherLogin");
-        userForUpdate.setEmail("anotherEmail@email.com");
-        userForUpdate.setBirthday(LocalDate.now().plusDays(1));
+        User userForUpdate = new User(1, "anotherEmail@Email.com", "anotherLogin", "anotherName", LocalDate.now().plusDays(1));
         Set<ConstraintViolation<User>> violations = validator.validate(userForUpdate);
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
@@ -178,12 +159,7 @@ public class UserControllerTest {
     @Test
     public void updateUserWithBlankNameTest() {
         controller.createUser(user);
-        User userForUpdate = new User();
-        userForUpdate.setId(1);
-        userForUpdate.setName("");
-        userForUpdate.setLogin("anotherLogin");
-        userForUpdate.setEmail("anotherEmail@email.com");
-        userForUpdate.setBirthday(LocalDate.of(2000,1,1));
+        User userForUpdate = new User(1, "anotherEmail@Email.com", "anotherLogin", "", LocalDate.of(2000,1,1));
         Set<ConstraintViolation<User>> violations = validator.validate(userForUpdate);
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
@@ -194,12 +170,7 @@ public class UserControllerTest {
     @Test
     public void updateUserWithNullNameTest() {
         controller.createUser(user);
-        User userForUpdate = new User();
-        userForUpdate.setId(1);
-        userForUpdate.setName(null);
-        userForUpdate.setLogin("anotherLogin");
-        userForUpdate.setEmail("anotherEmail@email.com");
-        userForUpdate.setBirthday(LocalDate.of(2000,1,1));
+        User userForUpdate = new User(1, "anotherEmail@Email.com", "anotherLogin", null, LocalDate.of(2000,1,1));
         Set<ConstraintViolation<User>> violations = validator.validate(userForUpdate);
         if (violations.isEmpty()) {
             controller.updateUser(userForUpdate);
@@ -245,7 +216,7 @@ public class UserControllerTest {
     @Test
     public void addFriendTest() {
         controller.createUser(user);
-        User anotherUser = new User();
+        User anotherUser = new User(2, "anotherEmail@Email.com", "anotherLogin", "anotherName", LocalDate.of(2000,1,1));
         anotherUser.setName("anotherName");
         anotherUser.setLogin("anotherLogin");
         anotherUser.setEmail("anotherEmail@email.com");
@@ -259,11 +230,7 @@ public class UserControllerTest {
     @Test
     public void deleteFriendTest() {
         controller.createUser(user);
-        User anotherUser = new User();
-        anotherUser.setName("anotherName");
-        anotherUser.setLogin("anotherLogin");
-        anotherUser.setEmail("anotherEmail@email.com");
-        anotherUser.setBirthday(LocalDate.of(2000,1,1));
+        User anotherUser = new User(2, "anotherEmail@Email.com", "anotherLogin", "anotherName", LocalDate.of(2000,1,1));
         controller.createUser(anotherUser);
         controller.addFriend(1, 2);
         controller.deleteFriend(1, 2);
@@ -274,17 +241,9 @@ public class UserControllerTest {
     @Test
     public void listAllFriendsTest() {
         controller.createUser(user);
-        User anotherUser = new User();
-        anotherUser.setName("anotherName");
-        anotherUser.setLogin("anotherLogin");
-        anotherUser.setEmail("anotherEmail@email.com");
-        anotherUser.setBirthday(LocalDate.of(2000,1,1));
+        User anotherUser = new User(2, "anotherEmail@Email.com", "anotherLogin", "anotherName", LocalDate.of(2000,1,1));
         controller.createUser(anotherUser);
-        User anotherUser1 = new User();
-        anotherUser1.setName("anotherName1");
-        anotherUser1.setLogin("anotherLogin1");
-        anotherUser1.setEmail("anotherEmail1@email.com");
-        anotherUser1.setBirthday(LocalDate.of(2000,1,1));
+        User anotherUser1 = new User(3, "anotherEmail1@Email.com", "anotherLogin1", "anotherName1", LocalDate.of(2000,1,1));
         controller.createUser(anotherUser1);
         controller.addFriend(1, 2);
         controller.addFriend(1, 3);
@@ -295,17 +254,9 @@ public class UserControllerTest {
     @Test
     public void commonFriendsTest() {
         controller.createUser(user);
-        User anotherUser = new User();
-        anotherUser.setName("anotherName");
-        anotherUser.setLogin("anotherLogin");
-        anotherUser.setEmail("anotherEmail@email.com");
-        anotherUser.setBirthday(LocalDate.of(2000,1,1));
+        User anotherUser = new User(2, "anotherEmail@Email.com", "anotherLogin", "anotherName", LocalDate.of(2000,1,1));
         controller.createUser(anotherUser);
-        User anotherUser1 = new User();
-        anotherUser1.setName("anotherName1");
-        anotherUser1.setLogin("anotherLogin1");
-        anotherUser1.setEmail("anotherEmail1@email.com");
-        anotherUser1.setBirthday(LocalDate.of(2000,1,1));
+        User anotherUser1 = new User(3, "anotherEmail1@Email.com", "anotherLogin1", "anotherName1", LocalDate.of(2000,1,1));
         controller.createUser(anotherUser1);
         controller.addFriend(2, 3);
         controller.addFriend(1, 3);
