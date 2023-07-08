@@ -22,6 +22,7 @@ import java.util.Set;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -39,6 +40,7 @@ class FilmoRateApplicationTests {
 		film = new Film(1, "name", "description",
 				LocalDate.of(2000, 1, 1), 120);
 	}
+
 	@Test
 	public void testAddUser() {
 		Optional<User> userOptional = Optional.ofNullable(us.addUser(user));
