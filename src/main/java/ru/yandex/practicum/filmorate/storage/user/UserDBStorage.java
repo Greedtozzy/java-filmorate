@@ -97,38 +97,21 @@ public class UserDBStorage implements UserStorage {
 
     @Override
     public void addFriend(int id1, int id2) {
-        User user1 = getUserById(id1);
-        User user2 = getUserById(id2);
+        getUserById(id1);
+        getUserById(id2);
 
-        if (!user1.getFriendsList().contains(id2) && !user2.getFriendsList().contains(id1)) {
-            jdbcTemplate.update("INSERT INTO friendships (user1_id, user2_id, friendships_status_id) " +
-                "VALUES (?, ?, 2)", id1, id2);
-            return;
-        }
-        if (!user1.getFriendsList().contains(id2) && user2.getFriendsList().contains(id1)) {
-            jdbcTemplate.update("INSERT INTO friendships (user1_id, user2_id, friendships_status_id) " +
-                    "VALUES (?, ?, 1)", id1, id2);
-            jdbcTemplate.update("UPDATE friendships SET friendships_status_id = 1 " +
-                    "WHERE user1_id = ? AND user2_id = ?", id2, id1);
-        }
+        jdbcTemplate.update("INSERT INTO friendships (user1_id, user2_id) " +
+                "VALUES (?, ?)", id1, id2);;
+
     }
 
     @Override
     public void deleteFriend(int id1, int id2) {
-        User user1 = getUserById(id1);
-        User user2 = getUserById(id2);
+        getUserById(id1);
+        getUserById(id2);
 
-        if (user1.getFriendsList().contains(id2) && !user2.getFriendsList().contains(id1)) {
-            jdbcTemplate.update("DELETE FROM friendships " +
-                    "WHERE user1_id = ? AND user2_id = ?", id1, id2);
-            return;
-        }
-        if (user1.getFriendsList().contains(id2) && user2.getFriendsList().contains(id1)) {
-            jdbcTemplate.update("DELETE FROM friendships " +
-                    "WHERE user1_id = ?, user2_id = ?", id1, id2);
-            jdbcTemplate.update("UPDATE friendships SET friendships_status_id = 2 " +
-                    "WHERE user1_id = ? AND user2_id = ?", id2, id1);
-        }
+        jdbcTemplate.update("DELETE FROM friendships " +
+                "WHERE user1_id = ? AND user2_id = ?", id1, id2);
     }
 
     @Override

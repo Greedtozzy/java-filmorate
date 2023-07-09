@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
@@ -29,7 +30,7 @@ public class FilmControllerTest {
         userStorage = new InMemoryUserStorage();
         controller = new FilmController(new FilmService(new InMemoryFilmStorage()));
         film = new Film(1, "name", "description",
-                LocalDate.of(2000,1,1), 120);
+                LocalDate.of(2000,1,1), 120, new Mpa(1, "G"));
         validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
@@ -111,7 +112,7 @@ public class FilmControllerTest {
     public void updateFilmWithCorrectFilmTest() {
         controller.addFilm(film);
         Film filmToUpdate = new Film(1, "anotherName", "anotherDescription",
-                LocalDate.of(2000,1,2), 121);
+                LocalDate.of(2000,1,2), 121, new Mpa(1, "G"));
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         if (violations.isEmpty()) {
             controller.updateFilm(filmToUpdate);
@@ -126,7 +127,7 @@ public class FilmControllerTest {
     public void updateFilmWithNotCorrectFilmNameTest() {
         controller.addFilm(film);
         Film filmToUpdate = new Film(1, "", "anotherDescription",
-                LocalDate.of(2000,1,2), 121);
+                LocalDate.of(2000,1,2), 121, new Mpa(1, "G"));
         Set<ConstraintViolation<Film>> violations = validator.validate(filmToUpdate);
         if (violations.isEmpty()) {
             controller.updateFilm(filmToUpdate);
@@ -148,7 +149,7 @@ public class FilmControllerTest {
                 "0000011010000101111101101000110001000110100001011010111010000101100111101000010111110001000001101000" +
                 "0101111011101000010110000110100011000000111010001100000101101000110000000110100001011111011010000101" +
                 "10101110100001011110111010000101110001101000110001111",
-                LocalDate.of(2000,1,2), 121);
+                LocalDate.of(2000,1,2), 121, new Mpa(1, "G"));
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         if (violations.isEmpty()) {
             controller.updateFilm(filmToUpdate);
@@ -160,7 +161,7 @@ public class FilmControllerTest {
     public void updateFilmWithNotCorrectFilmReleaseDateTest() {
         controller.addFilm(film);
         Film filmToUpdate = new Film(1, "anotherName", "anotherDescription",
-                LocalDate.of(1895,12,27), 121);
+                LocalDate.of(1895,12,27), 121, new Mpa(1, "G"));
         Set<ConstraintViolation<Film>> violations = validator.validate(filmToUpdate);
         if (violations.isEmpty()) {
             controller.updateFilm(filmToUpdate);
@@ -179,7 +180,7 @@ public class FilmControllerTest {
     public void updateFilmWithNotCorrectFilmDurationTest() {
         controller.addFilm(film);
         Film filmToUpdate = new Film(1, "anotherName", "anotherDescription",
-                LocalDate.of(2000,1,2), 0);
+                LocalDate.of(2000,1,2), 0, new Mpa(1, "G"));
         filmToUpdate.setId(1);
         filmToUpdate.setName("anotherName");
         filmToUpdate.setDescription("anotherDescription");
@@ -245,34 +246,34 @@ public class FilmControllerTest {
     public void getTopFilmsTest() {
         controller.addFilm(film);
 
-        Film f1 = new Film(1,"1", "1", LocalDate.of(2000,1,1), 120);
+        Film f1 = new Film(1,"1", "1", LocalDate.of(2000,1,1), 120, new Mpa(1, "G"));
         controller.addFilm(f1);
 
-        Film f2 = new Film(2,"2", "2", LocalDate.of(2000,1,1), 120);
+        Film f2 = new Film(2,"2", "2", LocalDate.of(2000,1,1), 120, new Mpa(1, "G"));
         controller.addFilm(f2);
 
-        Film f3 = new Film(3,"3", "3", LocalDate.of(2000,1,1), 120);
+        Film f3 = new Film(3,"3", "3", LocalDate.of(2000,1,1), 120, new Mpa(1, "G"));
         controller.addFilm(f3);
 
-        Film f4 = new Film(4,"4", "4", LocalDate.of(2000,1,1), 120);
+        Film f4 = new Film(4,"4", "4", LocalDate.of(2000,1,1), 120, new Mpa(1, "G"));
         controller.addFilm(f4);
 
-        Film f5 = new Film(5,"5", "5", LocalDate.of(2000,1,1), 120);
+        Film f5 = new Film(5,"5", "5", LocalDate.of(2000,1,1), 120, new Mpa(1, "G"));
         controller.addFilm(f5);
 
-        Film f6 = new Film(6,"6", "6", LocalDate.of(2000,1,1), 120);
+        Film f6 = new Film(6,"6", "6", LocalDate.of(2000,1,1), 120, new Mpa(1, "G"));
         controller.addFilm(f6);
 
-        Film f7 = new Film(7,"7", "7", LocalDate.of(2000,1,1), 120);
+        Film f7 = new Film(7,"7", "7", LocalDate.of(2000,1,1), 120, new Mpa(1, "G"));
         controller.addFilm(f7);
 
-        Film f8 = new Film(8,"8", "8", LocalDate.of(2000,1,1), 120);
+        Film f8 = new Film(8,"8", "8", LocalDate.of(2000,1,1), 120, new Mpa(1, "G"));
         controller.addFilm(f8);
 
-        Film f9 = new Film(9,"9", "9", LocalDate.of(2000,1,1), 120);
+        Film f9 = new Film(9,"9", "9", LocalDate.of(2000,1,1), 120, new Mpa(1, "G"));
         controller.addFilm(f9);
 
-        Film f10 = new Film(10,"10", "10", LocalDate.of(2000,1,1), 120);
+        Film f10 = new Film(10,"10", "10", LocalDate.of(2000,1,1), 120, new Mpa(1, "G"));
         controller.addFilm(f10);
 
         User user = new User(1, "login", "name", "email@email.com",

@@ -15,7 +15,7 @@ target/
 !**/src/test/**/target/
 mvnw
 mvnw.cmd
-!filmorate.png
+!filmorate db v2.png
 !db
 
 ### STS ###

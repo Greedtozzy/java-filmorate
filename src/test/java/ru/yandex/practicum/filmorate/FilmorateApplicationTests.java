@@ -8,6 +8,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmDBStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDBStorage;
 
@@ -26,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class FilmorateApplicationTests {
 	private final UserDBStorage us;
 	private final FilmDBStorage fs;
+	private final MpaStorage ms;
+	private final GenreStorage gs;
 	private User user;
 	private Film film;
 
@@ -34,7 +38,7 @@ class FilmorateApplicationTests {
 		user = new User(1, "e@e.com", "login", "name",
 				LocalDate.of(2000, 1, 1));
 		film = new Film(1, "name", "description",
-				LocalDate.of(2000, 1, 1), 120);
+				LocalDate.of(2000, 1, 1), 120, new Mpa(1, "G"));
 	}
 
 	@Test
@@ -152,7 +156,7 @@ class FilmorateApplicationTests {
 	public void testUpdateFilm() {
 		fs.addFilm(film);
 		Film filmForUpdate = new Film(1, "name1", "description1",
-				LocalDate.of(2010, 1, 1), 300);
+				LocalDate.of(2010, 1, 1), 300, new Mpa(2, "PG"));
 		fs.updateFilm(filmForUpdate);
 		assertEquals(fs.getFilmById(1), filmForUpdate);
 	}
@@ -185,26 +189,26 @@ class FilmorateApplicationTests {
 
 	@Test
 	public void testGetGenres() {
-		List<Genre> genres = fs.getGenres();
+		List<Genre> genres = gs.getGenres();
 		assertEquals(genres.size(), 6);;
 	}
 
 	@Test
 	public void testGetGenreById() {
-		Genre genre = fs.getGenreById(1);
+		Genre genre = gs.getGenreById(1);
 		assertEquals(1, genre.getId());
 		assertEquals("Комедия", genre.getName());
 	}
 
 	@Test
 	public void testGetRatings() {
-		List<Mpa> ratings = fs.getRatings();
+		List<Mpa> ratings = ms.getRatings();
 		assertEquals(ratings.size(), 5);
 	}
 
 	@Test
 	public void testGetRatingById() {
-		Mpa mpa = fs.getRatingById(1);
+		Mpa mpa = ms.getRatingById(1);
 		assertEquals(1, mpa.getId());
 		assertEquals("G", mpa.getName());
 	}
@@ -213,7 +217,7 @@ class FilmorateApplicationTests {
 	public void testTopFilms() {
 		fs.addFilm(film);
 		Film film1 = new Film(2, "name1", "description1",
-				LocalDate.of(2010, 1, 1), 300);
+				LocalDate.of(2010, 1, 1), 300, new Mpa(2, "PG"));
 		fs.addFilm(film1);
 		us.addUser(user);
 		fs.addLike(1, 1);

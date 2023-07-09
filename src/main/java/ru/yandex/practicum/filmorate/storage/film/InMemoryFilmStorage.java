@@ -5,8 +5,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistException;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -70,26 +68,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void deleteLike(int userId, int filmId) {
         getFilmById(filmId).getLikes().remove(userId);
-    }
-
-    @Override
-    public List<Genre> getGenres() {
-        return null;
-    }
-
-    @Override
-    public Genre getGenreById(int id) {
-        return null;
-    }
-
-    @Override
-    public List<Mpa> getRatings() {
-        return null;
-    }
-
-    @Override
-    public Mpa getRatingById(int id) {
-        return null;
     }
 
     @Override

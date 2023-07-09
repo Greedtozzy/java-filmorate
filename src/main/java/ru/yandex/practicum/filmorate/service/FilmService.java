@@ -49,20 +49,4 @@ public class FilmService {
     public List<Film> topFilms(int count) {
         return filmStorage.topFilms(count);
     }
-
-    public List<Genre> getGenres() {
-        return filmStorage.getGenres();
-    }
-
-    public Genre getGenreById(int id) {
-        return filmStorage.getGenreById(id);
-    }
-
-    public List<Mpa> getRatings() {
-        return filmStorage.getRatings();
-    }
-
-    public Mpa getRatingById(int id) {
-        return filmStorage.getRatingById(id);
-    }
 }
