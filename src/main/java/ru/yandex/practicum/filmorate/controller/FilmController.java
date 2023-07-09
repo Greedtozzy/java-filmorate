@@ -9,7 +9,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/films")
+@RequestMapping
 @Slf4j
 public class FilmController {
     private final FilmService filmService;
@@ -18,45 +18,55 @@ public class FilmController {
         this.filmService = filmService;
     }
 
-    @GetMapping
+    @GetMapping("/films")
     public List<Film> allFilms() {
         log.debug("Film's list: {}", filmService.getListAllFilms());
         return filmService.getListAllFilms();
     }
 
-    @PostMapping
+    @PostMapping("/films")
     public Film addFilm(@Valid @RequestBody Film film) {
         log.debug("Film added: {}", film);
         return filmService.addFilm(film);
     }
 
-    @PutMapping
+    @DeleteMapping("/films/{id}")
+    public Film deleteFilm(@PathVariable int id) {
+        log.debug("Film by id {} was deleted", id);
+        return filmService.deleteFilm(id);
+    }
+
+    @PutMapping("/films")
     public Film updateFilm(@Valid @RequestBody Film film) {
         log.debug("Film updated: {}", film);
         return filmService.updateFilm(film);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/films/{id}")
     public Film getFilmById(@PathVariable int id) {
         log.debug("Film by id: {}", id);
         return filmService.getFilmById(id);
     }
 
-    @PutMapping("{id}/like/{userId}")
+    @PutMapping("/films/{id}/like/{userId}")
     public void addLike(@PathVariable int id, @PathVariable int userId) {
         log.debug("Film by id {} has like from user {}", id, userId);
         filmService.addLike(userId, id);
     }
 
-    @DeleteMapping("{id}/like/{userId}")
+    @DeleteMapping("/films/{id}/like/{userId}")
     public void deleteLike(@PathVariable int id, @PathVariable int userId) {
         log.debug("Film by id {} delete like from user {}", id, userId);
         filmService.deleteLike(userId, id);
     }
 
-    @GetMapping("/popular")
+    @GetMapping("/films/popular")
     public List<Film> getTopFilms(@RequestParam(value = "count", defaultValue = "10", required = false) int count) {
         log.debug("Top {} films", count);
         return filmService.topFilms(count);
     }
+
+
+
+
 }
