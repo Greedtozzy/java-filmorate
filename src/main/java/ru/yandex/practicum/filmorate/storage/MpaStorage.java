@@ -29,7 +29,7 @@ public class MpaStorage {
             return jdbcTemplate.queryForObject("SELECT * FROM ratings_mpa WHERE rating_id = ?",
                     mpaRatingRowMapper(), id);
         } catch (EmptyResultDataAccessException e) {
-            throw new MpaNotFoundException(String.format("Mpa by id {} not found", id));
+            throw new MpaNotFoundException(String.format("Mpa by id %d not found", id));
         }
     }
 

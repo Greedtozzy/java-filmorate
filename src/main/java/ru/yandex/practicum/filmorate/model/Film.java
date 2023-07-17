@@ -5,6 +5,8 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.validators.CustomDateAnnotation;
 
 import javax.validation.constraints.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,5 +39,9 @@ public class Film {
         this.duration = duration;
         this.mpa = mpa;
         this.rate = 0;
+    }
+
+    public void addGenre(ResultSet rs) throws SQLException {
+        genres.add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));
     }
 }

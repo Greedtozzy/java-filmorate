@@ -31,9 +31,13 @@ public class UserDBStorage implements UserStorage {
                     "FROM users u " +
                     "LEFT JOIN friendships f ON u.user_id = f.user1_id " +
                     "WHERE u.user_id = ?", userRowMapper(), id);
-            return users.get(0);
+            if (users != null) {
+                return users.get(0);
+            } else {
+                throw new UserNotFoundException(String.format(String.format("User id %d not found", id)));
+            }
         } catch (EmptyResultDataAccessException e) {
-            throw new UserNotFoundException(String.format(String.format("User id {} not found", id)));
+            throw new UserNotFoundException(String.format(String.format("User id %d not found", id)));
         }
     }
 
@@ -101,7 +105,7 @@ public class UserDBStorage implements UserStorage {
         getUserById(id2);
 
         jdbcTemplate.update("INSERT INTO friendships (user1_id, user2_id) " +
-                "VALUES (?, ?)", id1, id2);;
+                "VALUES (?, ?)", id1, id2);
 
     }
 

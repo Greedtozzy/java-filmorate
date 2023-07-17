@@ -16,8 +16,6 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,7 +38,7 @@ public class FilmDBStorage implements FilmStorage {
             List<Film> films = jdbcTemplate.queryForObject(sql, filmRowMapper(), id);
             return films.get(0);
         } catch (EmptyResultDataAccessException e) {
-            throw new FilmNotFoundException(String.format("Film id {} not found", id));
+            throw new FilmNotFoundException(String.format("Film id %d not found", id));
         }
     }
 
@@ -129,7 +127,7 @@ public class FilmDBStorage implements FilmStorage {
             jdbcTemplate.queryForObject("select user_id from users where user_id = ?",
                     (rs, rowNum) -> rs.getInt("user_id"), userId);
         } catch (EmptyResultDataAccessException e) {
-            throw new UserNotFoundException(String.format("User by id {} not found", userId));
+            throw new UserNotFoundException(String.format("User by id %d not found", userId));
         }
         jdbcTemplate.update("UPDATE films SET film_rating = ? WHERE film_id = ?",
                 filmRateById(filmId) + 1, filmId);
@@ -142,7 +140,7 @@ public class FilmDBStorage implements FilmStorage {
             jdbcTemplate.queryForObject("select user_id from users where user_id = ?",
                     (rs, rowNum) -> rs.getInt("user_id"), userId);
         } catch (EmptyResultDataAccessException e) {
-            throw new UserNotFoundException(String.format("User by id {} not found", userId));
+            throw new UserNotFoundException(String.format("User by id %d not found", userId));
         }
         if (filmRateById(filmId) > 0) {
             jdbcTemplate.update("UPDATE films SET film_rating = ? WHERE film_id = ?",
@@ -176,7 +174,7 @@ public class FilmDBStorage implements FilmStorage {
             do {
                 if (film.getId() == rs.getInt("film_id")) {
                     if (rs.getInt("genre_id") != 0) {
-                        addGenre(film, rs);
+                        film.addGenre(rs);
                     }
                 } else {
                     film = new Film(rs.getInt("film_id"),
@@ -187,7 +185,7 @@ public class FilmDBStorage implements FilmStorage {
                             new Mpa(rs.getInt("rating_mpa_id"), rs.getString("rating_name")));
                     film.setRate(rs.getInt("film_rating"));
                     if (rs.getInt("genre_id") != 0) {
-                        addGenre(film, rs);
+                        film.addGenre(rs);
                     }
                 }
                 if (!films.stream()
@@ -210,9 +208,5 @@ public class FilmDBStorage implements FilmStorage {
         for (Genre genre: film.getGenres()) {
             jdbcTemplate.update(sql, film.getId(), genre.getId());
         }
-    }
-
-    private void addGenre(Film film, ResultSet rs) throws SQLException {
-        film.getGenres().add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));
     }
 }

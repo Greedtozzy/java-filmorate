@@ -28,7 +28,7 @@ public class GenreStorage {
             return jdbcTemplate.queryForObject("SELECT * FROM genres WHERE genre_id = ?",
                     genreRowMapper(), id);
         } catch (EmptyResultDataAccessException e) {
-            throw new GenreNotFoundException(String.format("Genre by id {} not found", id));
+            throw new GenreNotFoundException(String.format("Genre by id %d not found", id));
         }
     }
 
