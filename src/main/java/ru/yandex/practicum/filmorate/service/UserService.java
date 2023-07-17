@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -9,9 +10,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService {
-    UserStorage userStorage;
 
-    public UserService(UserStorage userStorage) {
+    private final UserStorage userStorage;
+
+    public UserService(@Qualifier("userDBStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -35,27 +37,21 @@ public class UserService {
         return userStorage.updateUser(user);
     }
 
-    public void addFriend(int id0, int id1) {
-        User u0 = userStorage.getUserById(id0);
-        User u1 = userStorage.getUserById(id1);
-        u0.getFriendsList().add(id1);
-        u1.getFriendsList().add(id0);
+    public void addFriend(int id1, int id2) {
+        userStorage.addFriend(id1, id2);
     }
 
-    public void deleteFriend(int id0, int id1) {
-        userStorage.getUserById(id0).getFriendsList().remove(id1);
-        userStorage.getUserById(id1).getFriendsList().remove(id0);
+    public void deleteFriend(int id1, int id2) {
+        userStorage.deleteFriend(id1, id2);
     }
 
     public List<User> listAllFriends(int id) {
-        return userStorage.getUserById(id).getFriendsList().stream()
-                .map(i -> userStorage.getUserById(i))
-                .collect(Collectors.toList());
+        return userStorage.listAllFriends(id);
     }
 
     public List<User> commonFriends(int id0, int id1) {
         return userStorage.getUserById(id0).getFriendsList().stream()
-                .filter(userStorage.getUserById(id1).getFriendsList()::contains)
-                .map(i -> userStorage.getUserById(i)).distinct().collect(Collectors.toList());
+                .filter(userStorage.getUserById(id1).getFriendsList()::contains).filter(i -> i != 0)
+                .map(userStorage::getUserById).distinct().collect(Collectors.toList());
     }
 }
