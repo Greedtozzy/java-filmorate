@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.director.DirectorDBStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -24,6 +25,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class FilmDBStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+
+    private final DirectorDBStorage directorDBStorage;
 
     @Override
     public Film getFilmById(int id) {
@@ -58,6 +61,43 @@ public class FilmDBStorage implements FilmStorage {
         } catch (EmptyResultDataAccessException e) {
             return new ArrayList<>();
         }
+    }
+
+    @Override
+    public List<Film> getAllFilmsByDirectorId(int directorId, String sortBy){
+        directorDBStorage.getDirectorById(directorId);
+        List<Film> films = new ArrayList<>();
+        switch (sortBy){
+            case "year":
+                String sqlByYear = "select f.film_id, f.film_name, f.film_description, f.film_release_date, " +
+                        "f.film_duration, f.film_rating, f.rating_mpa_id, rm.rating_name, " +
+                        "fg.genre_id, g.genre_name, l.user_id, fd.director_id " +
+                        "from films f " +
+                        "left join film_genre fg on f.film_id = fg.film_id " +
+                        "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
+                        "left join genres g on fg.genre_id = g.genre_id " +
+                        "left join likes l on f.film_id = l.film_id" +
+                        "left join film_director fd on f.film_id = fd.film_id" +
+                        "where fd.director_id = ?" +
+                        "order by f.film_release_date desc";
+                films = jdbcTemplate.queryForObject(sqlByYear, filmRowMapper(), directorId);
+                break;
+            case "likes":
+                String sqlByLikes = "select f.film_id, f.film_name, f.film_description, f.film_release_date, " +
+                        "f.film_duration, f.film_rating, f.rating_mpa_id, rm.rating_name, " +
+                        "fg.genre_id, g.genre_name, l.user_id, fd.director_id " +
+                        "from films f " +
+                        "left join film_genre fg on f.film_id = fg.film_id " +
+                        "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
+                        "left join genres g on fg.genre_id = g.genre_id " +
+                        "left join likes l on f.film_id = l.film_id" +
+                        "left join film_director fd on f.film_id = fd.film_id" +
+                        "where fd.director_id = ?" +
+                        "order by f.film_rating desc";
+                films = jdbcTemplate.queryForObject(sqlByLikes, filmRowMapper(), directorId);
+            break;
+        }
+        return films;
     }
 
     @Override

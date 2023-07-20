@@ -20,6 +20,10 @@ public class FilmService {
         return filmStorage.getListAllFilms();
     }
 
+    public List<Film> getAllFilmsByDirectorId(int directorId, String sortBy){
+        return filmStorage.getAllFilmsByDirectorId(directorId,sortBy);
+    }
+
     public Film getFilmById(int id) {
         return filmStorage.getFilmById(id);
     }
