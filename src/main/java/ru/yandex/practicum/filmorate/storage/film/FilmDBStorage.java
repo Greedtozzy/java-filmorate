@@ -16,6 +16,8 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,11 +31,12 @@ public class FilmDBStorage implements FilmStorage {
     public Film getFilmById(int id) {
         try {
             String sql = "select f.film_id, f.film_name, f.film_description, f.film_release_date, f.film_duration, " +
-                    "f.film_rating, f.rating_mpa_id, rm.rating_name, fg.genre_id, g.genre_name " +
+                    "f.film_rating, f.rating_mpa_id, rm.rating_name, fg.genre_id, g.genre_name, l.user_id " +
                     "from films f " +
                     "left join film_genre fg on f.film_id = fg.film_id " +
                     "left join genres g on fg.genre_id = g.genre_id " +
                     "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
+                    "left join likes l on f.film_id = l.film_id " +
                     "WHERE f.film_id = ?";
             List<Film> films = jdbcTemplate.queryForObject(sql, filmRowMapper(), id);
             return films.get(0);
@@ -46,11 +49,13 @@ public class FilmDBStorage implements FilmStorage {
     public List<Film> getListAllFilms() {
         try {
             String sql = "select f.film_id, f.film_name, f.film_description, f.film_release_date, " +
-                    "f.film_duration, f.film_rating, f.rating_mpa_id, rm.rating_name, fg.genre_id, g.genre_name " +
+                    "f.film_duration, f.film_rating, f.rating_mpa_id, rm.rating_name, " +
+                    "fg.genre_id, g.genre_name, l.user_id " +
                     "from films f " +
                     "left join film_genre fg on f.film_id = fg.film_id " +
                     "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
-                    "left join genres g on fg.genre_id = g.genre_id"
+                    "left join genres g on fg.genre_id = g.genre_id " +
+                    "left join likes l on f.film_id = l.film_id"
                     ;
             List<Film> films = jdbcTemplate.queryForObject(sql, filmRowMapper());
             films.sort(Comparator.comparing(Film::getId));
@@ -131,6 +136,8 @@ public class FilmDBStorage implements FilmStorage {
         }
         jdbcTemplate.update("UPDATE films SET film_rating = ? WHERE film_id = ?",
                 filmRateById(filmId) + 1, filmId);
+
+        jdbcTemplate.update("insert into likes (user_id, film_id) values (?, ?)", userId, filmId);
     }
 
     @Override
@@ -145,17 +152,21 @@ public class FilmDBStorage implements FilmStorage {
         if (filmRateById(filmId) > 0) {
             jdbcTemplate.update("UPDATE films SET film_rating = ? WHERE film_id = ?",
                     filmRateById(filmId) - 1, filmId);
+
+            jdbcTemplate.update("delete from likes where user_id = ? and film_id = ?", userId, filmId);
         }
     }
 
     @Override
     public List<Film> topFilms(int count) {
         String sql = "select f.film_id, f.film_name, f.film_description, f.film_release_date, " +
-                "f.film_duration, f.film_rating, f.rating_mpa_id, rm.rating_name, fg.genre_id, g.genre_name " +
+                "f.film_duration, f.film_rating, f.rating_mpa_id, rm.rating_name, " +
+                "fg.genre_id, g.genre_name, l.user_id " +
                 "from films f " +
                 "left join film_genre fg on f.film_id = fg.film_id " +
                 "left join genres g on fg.genre_id = g.genre_id " +
                 "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
+                "left join likes l on f.film_id = l.film_id " +
                 "order by film_rating desc limit ?";
         return jdbcTemplate.queryForObject(sql, filmRowMapper(),count);
     }
@@ -175,6 +186,7 @@ public class FilmDBStorage implements FilmStorage {
                 if (film.getId() == rs.getInt("film_id")) {
                     if (rs.getInt("genre_id") != 0) {
                         film.addGenre(rs);
+                        addLikesToRm(film, rs);
                     }
                 } else {
                     film = new Film(rs.getInt("film_id"),
@@ -186,6 +198,7 @@ public class FilmDBStorage implements FilmStorage {
                     film.setRate(rs.getInt("film_rating"));
                     if (rs.getInt("genre_id") != 0) {
                         film.addGenre(rs);
+                        addLikesToRm(film, rs);
                     }
                 }
                 if (!films.stream()
@@ -208,5 +221,9 @@ public class FilmDBStorage implements FilmStorage {
         for (Genre genre: film.getGenres()) {
             jdbcTemplate.update(sql, film.getId(), genre.getId());
         }
+    }
+
+    private void addLikesToRm(Film film, ResultSet rs) throws SQLException {
+        film.getLikes().add(rs.getInt("user_id"));
     }
 }
