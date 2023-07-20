@@ -47,4 +47,8 @@ public class FilmService {
     public List<Film> topFilms(int count) {
         return filmStorage.topFilms(count);
     }
+
+    public List<Film> searchFilms(String query, String by) {
+        return filmStorage.searchFilms(query, by);
+    }
 }
