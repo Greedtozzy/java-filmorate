@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -18,6 +19,7 @@ import ru.yandex.practicum.filmorate.storage.director.DirectorDBStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -134,15 +136,10 @@ public class FilmDBStorage implements FilmStorage {
         }
 
         jdbcTemplate.update("DELETE FROM film_genre WHERE film_id = ?", film.getId());
-        for (Genre genre : film.getGenres()) {
-            jdbcTemplate.update("INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)",
-                    film.getId(), genre.getId());
-        }
+        addFilmGenres(film);
+
         jdbcTemplate.update("DELETE FROM film_director WHERE film_id = ?", film.getId());
-        for (Director director : film.getDirectors()) {
-            jdbcTemplate.update("INSERT INTO film_director (film_id, director_id) VALUES (?, ?)",
-                    film.getId(), director.getId());
-        }
+        addFilmDirectors(film);
         return getFilmById(film.getId());
     }
 
@@ -241,5 +238,35 @@ public class FilmDBStorage implements FilmStorage {
         for (Director director : film.getDirectors()) {
             jdbcTemplate.update(sql, film.getId(), director.getId());
         }
+    }
+
+    private void addFilmGenres(Film film) {
+        jdbcTemplate.batchUpdate("insert into film_genre (film_id, genre_id) values (?,?)", new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                preparedStatement.setInt(1, film.getId());
+                preparedStatement.setInt(2, new ArrayList<>(film.getGenres()).get(i).getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return film.getGenres().size();
+            }
+        });
+    }
+
+    private void addFilmDirectors(Film film) {
+        jdbcTemplate.batchUpdate("insert into film_director (film_id, director_id) values (?,?)", new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                preparedStatement.setInt(1, film.getId());
+                preparedStatement.setInt(2, new ArrayList<>(film.getDirectors()).get(i).getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return film.getDirectors().size();
+            }
+        });
     }
 }
