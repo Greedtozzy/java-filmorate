@@ -10,6 +10,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -25,20 +26,22 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class FilmDBStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-
     private final DirectorDBStorage directorDBStorage;
+    private final String sql = "select f.film_id, f.film_name, f.film_description, f.film_release_date, f.film_duration, " +
+            "f.film_rating, f.rating_mpa_id, rm.rating_name, fg.genre_id, g.genre_name, " +
+            "l.user_id, fd.director_id, d.director_name " +
+            "from films f " +
+            "left join film_genre fg on f.film_id = fg.film_id " +
+            "left join genres g on fg.genre_id = g.genre_id " +
+            "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
+            "left join likes l on f.film_id = l.film_id " +
+            "left join film_director fd on f.film_id = fd.film_id " +
+            "left join directors d on fd.director_id = d.director_id ";
 
     @Override
     public Film getFilmById(int id) {
         try {
-            String sql = "select f.film_id, f.film_name, f.film_description, f.film_release_date, f.film_duration, " +
-                    "f.film_rating, f.rating_mpa_id, rm.rating_name, fg.genre_id, g.genre_name " +
-                    "from films f " +
-                    "left join film_genre fg on f.film_id = fg.film_id " +
-                    "left join genres g on fg.genre_id = g.genre_id " +
-                    "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
-                    "WHERE f.film_id = ?";
-            List<Film> films = jdbcTemplate.queryForObject(sql, filmRowMapper(), id);
+            List<Film> films = jdbcTemplate.queryForObject(sql + "WHERE f.film_id = ?", filmRowMapper(), id);
             return films.get(0);
         } catch (EmptyResultDataAccessException e) {
             throw new FilmNotFoundException(String.format("Film id %d not found", id));
@@ -48,13 +51,6 @@ public class FilmDBStorage implements FilmStorage {
     @Override
     public List<Film> getListAllFilms() {
         try {
-            String sql = "select f.film_id, f.film_name, f.film_description, f.film_release_date, " +
-                    "f.film_duration, f.film_rating, f.rating_mpa_id, rm.rating_name, fg.genre_id, g.genre_name " +
-                    "from films f " +
-                    "left join film_genre fg on f.film_id = fg.film_id " +
-                    "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
-                    "left join genres g on fg.genre_id = g.genre_id"
-                    ;
             List<Film> films = jdbcTemplate.queryForObject(sql, filmRowMapper());
             films.sort(Comparator.comparing(Film::getId));
             return films;
@@ -66,38 +62,22 @@ public class FilmDBStorage implements FilmStorage {
     @Override
     public List<Film> getAllFilmsByDirectorId(int directorId, String sortBy){
         directorDBStorage.getDirectorById(directorId);
-        List<Film> films = new ArrayList<>();
-        switch (sortBy){
-            case "year":
-                String sqlByYear = "select f.film_id, f.film_name, f.film_description, f.film_release_date, " +
-                        "f.film_duration, f.film_rating, f.rating_mpa_id, rm.rating_name, " +
-                        "fg.genre_id, g.genre_name, l.user_id, fd.director_id " +
-                        "from films f " +
-                        "left join film_genre fg on f.film_id = fg.film_id " +
-                        "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
-                        "left join genres g on fg.genre_id = g.genre_id " +
-                        "left join likes l on f.film_id = l.film_id" +
-                        "left join film_director fd on f.film_id = fd.film_id" +
-                        "where fd.director_id = ?" +
-                        "order by f.film_release_date desc";
-                films = jdbcTemplate.queryForObject(sqlByYear, filmRowMapper(), directorId);
-                break;
-            case "likes":
-                String sqlByLikes = "select f.film_id, f.film_name, f.film_description, f.film_release_date, " +
-                        "f.film_duration, f.film_rating, f.rating_mpa_id, rm.rating_name, " +
-                        "fg.genre_id, g.genre_name, l.user_id, fd.director_id " +
-                        "from films f " +
-                        "left join film_genre fg on f.film_id = fg.film_id " +
-                        "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
-                        "left join genres g on fg.genre_id = g.genre_id " +
-                        "left join likes l on f.film_id = l.film_id" +
-                        "left join film_director fd on f.film_id = fd.film_id" +
-                        "where fd.director_id = ?" +
-                        "order by f.film_rating desc";
-                films = jdbcTemplate.queryForObject(sqlByLikes, filmRowMapper(), directorId);
-            break;
+        try {
+            switch (sortBy) {
+                case "year":
+                    return jdbcTemplate.queryForObject(sql +
+                            "where fd.director_id = ? order by f.film_release_date",
+                            filmRowMapper(), directorId);
+                case "likes":
+                    return jdbcTemplate.queryForObject(sql +
+                            "where fd.director_id = ? order by f.film_rating desc",
+                            filmRowMapper(), directorId);
+                default:
+                    throw new RuntimeException();
+            }
+        } catch (EmptyResultDataAccessException e) {
+            return new ArrayList<>();
         }
-        return films;
     }
 
     @Override
@@ -119,6 +99,7 @@ public class FilmDBStorage implements FilmStorage {
         film.setId(keyHolder.getKey().intValue());
 
         saveGenres(film);
+        saveDirectors(film);
 
         return film;
     }
@@ -157,6 +138,11 @@ public class FilmDBStorage implements FilmStorage {
             jdbcTemplate.update("INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)",
                     film.getId(), genre.getId());
         }
+        jdbcTemplate.update("DELETE FROM film_director WHERE film_id = ?", film.getId());
+        for (Director director : film.getDirectors()) {
+            jdbcTemplate.update("INSERT INTO film_director (film_id, director_id) VALUES (?, ?)",
+                    film.getId(), director.getId());
+        }
         return getFilmById(film.getId());
     }
 
@@ -190,19 +176,13 @@ public class FilmDBStorage implements FilmStorage {
 
     @Override
     public List<Film> topFilms(int count) {
-        String sql = "select f.film_id, f.film_name, f.film_description, f.film_release_date, " +
-                "f.film_duration, f.film_rating, f.rating_mpa_id, rm.rating_name, fg.genre_id, g.genre_name " +
-                "from films f " +
-                "left join film_genre fg on f.film_id = fg.film_id " +
-                "left join genres g on fg.genre_id = g.genre_id " +
-                "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
-                "order by film_rating desc limit ?";
-        return jdbcTemplate.queryForObject(sql, filmRowMapper(),count);
+        return jdbcTemplate.queryForObject(sql + "order by film_rating desc limit ?", filmRowMapper(),count);
     }
 
     private RowMapper<List<Film>> filmRowMapper() {
         return (rs, rowNum) -> {
             List<Film> films = new ArrayList<>();
+
             Film film = new Film(rs.getInt("film_id"),
                     rs.getString("film_name"),
                     rs.getString("film_description"),
@@ -216,6 +196,9 @@ public class FilmDBStorage implements FilmStorage {
                     if (rs.getInt("genre_id") != 0) {
                         film.addGenre(rs);
                     }
+                    if (rs.getInt("director_id") != 0) {
+                        film.addDirector(rs);
+                    }
                 } else {
                     film = new Film(rs.getInt("film_id"),
                             rs.getString("film_name"),
@@ -226,6 +209,9 @@ public class FilmDBStorage implements FilmStorage {
                     film.setRate(rs.getInt("film_rating"));
                     if (rs.getInt("genre_id") != 0) {
                         film.addGenre(rs);
+                    }
+                    if (rs.getInt("director_id") != 0) {
+                        film.addDirector(rs);
                     }
                 }
                 if (!films.stream()
@@ -247,6 +233,13 @@ public class FilmDBStorage implements FilmStorage {
         String sql = "insert into film_genre (film_id, genre_id) values (?, ?)";
         for (Genre genre: film.getGenres()) {
             jdbcTemplate.update(sql, film.getId(), genre.getId());
+        }
+    }
+
+    private void saveDirectors(Film film) {
+        String sql = "insert into film_director (film_id, director_id) values (?, ?)";
+        for (Director director : film.getDirectors()) {
+            jdbcTemplate.update(sql, film.getId(), director.getId());
         }
     }
 }
