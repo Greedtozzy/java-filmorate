@@ -18,7 +18,6 @@ public class Film {
     @Size(max = 200)
     private String description;
     @NotNull
-//    @Past
     @CustomDateAnnotation
     private LocalDate releaseDate;
     @NotNull

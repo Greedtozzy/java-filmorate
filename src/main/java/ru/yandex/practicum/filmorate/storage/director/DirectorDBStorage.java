@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.director;
 
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -14,17 +15,11 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@AllArgsConstructor
 public class DirectorDBStorage implements DirectorStorage{
     private final Logger log = LoggerFactory.getLogger(DirectorDBStorage.class);
     private final JdbcTemplate jdbcTemplate;
     private final SimpleJdbcInsert simpleJdbcInsert;
-
-    public DirectorDBStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate.getDataSource())
-                .withTableName("directors")
-                .usingGeneratedKeyColumns("director_id");
-    }
 
     @Override
     public List<Director> getListAllDirectors() {
