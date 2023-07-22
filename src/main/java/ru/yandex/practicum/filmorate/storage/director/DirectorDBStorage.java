@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.Map;
 
 @Component
 @AllArgsConstructor
-public class DirectorDBStorage implements DirectorStorage{
+public class DirectorDBStorage implements DirectorStorage {
     private final Logger log = LoggerFactory.getLogger(DirectorDBStorage.class);
     private final JdbcTemplate jdbcTemplate;
     private final SimpleJdbcInsert simpleJdbcInsert;
@@ -30,11 +31,11 @@ public class DirectorDBStorage implements DirectorStorage{
     @Override
     public Director getDirectorById(int id) {
         String sqlDirector = "SELECT * FROM directors WHERE director_id = ?";
-        try{
+        try {
             Director director = jdbcTemplate.queryForObject(sqlDirector, (rs, rowNum) -> makeDirector(rs), id);
             log.info("Найден режиссёр: {} {}", director.getId(), director.getName());
             return director;
-        } catch (EmptyResultDataAccessException e){
+        } catch (EmptyResultDataAccessException e) {
             throw new DirectorNotFoundException("Режиссёр с идентификатором " +
                     id + " не зарегистрирован!");
         }
