@@ -62,7 +62,7 @@ public class FilmDBStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getAllFilmsByDirectorId(int directorId, String sortBy){
+    public List<Film> getAllFilmsByDirectorId(int directorId, String sortBy) {
         directorDBStorage.getDirectorById(directorId);
         try {
             switch (sortBy) {

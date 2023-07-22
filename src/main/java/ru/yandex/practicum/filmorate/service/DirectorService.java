@@ -15,23 +15,23 @@ public class DirectorService {
         this.directorStorage = directorStorage;
     }
 
-    public List<Director> getListAllDirectors(){
+    public List<Director> getListAllDirectors() {
         return directorStorage.getListAllDirectors();
     }
 
-    public Director getDirectorById(int id){
+    public Director getDirectorById(int id) {
         return directorStorage.getDirectorById(id);
     }
 
-    public Director addDirector(Director director){
+    public Director addDirector(Director director) {
         return directorStorage.addDirector(director);
     }
 
-    public Director updateDirector(Director director){
+    public Director updateDirector(Director director) {
         return directorStorage.updateDirector(director);
     }
 
-    public Director deleteDirector(int id){
+    public Director deleteDirector(int id) {
         return directorStorage.deleteDirector(id);
     }
 
