@@ -25,7 +25,7 @@ public class FilmController {
     }
 
     @GetMapping ("/director/{directorId}")
-    public List<Film> getAllFilmsByDirectorId(@PathVariable int directorId, @RequestParam(value = "sortBy") String sortBy){
+    public List<Film> getAllFilmsByDirectorId(@PathVariable int directorId, @RequestParam(value = "sortBy") String sortBy) {
         log.debug("Film's list: {}", filmService.getAllFilmsByDirectorId(directorId,sortBy));
         return filmService.getAllFilmsByDirectorId(directorId,sortBy);
     }
