@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,7 +23,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-@Qualifier("filmDBStorage")
 @AllArgsConstructor
 public class FilmDBStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
