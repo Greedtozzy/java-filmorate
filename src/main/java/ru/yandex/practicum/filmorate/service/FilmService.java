@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -12,12 +11,16 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
 
-    public FilmService(@Qualifier("filmDBStorage") FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
     }
 
     public List<Film> getListAllFilms() {
         return filmStorage.getListAllFilms();
+    }
+
+    public List<Film> getAllFilmsByDirectorId(int directorId, String sortBy) {
+        return filmStorage.getAllFilmsByDirectorId(directorId,sortBy);
     }
 
     public Film getFilmById(int id) {

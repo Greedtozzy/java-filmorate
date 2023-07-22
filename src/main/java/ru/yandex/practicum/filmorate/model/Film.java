@@ -8,8 +8,7 @@ import javax.validation.constraints.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
 public class Film {
@@ -19,7 +18,6 @@ public class Film {
     @Size(max = 200)
     private String description;
     @NotNull
-    @Past
     @CustomDateAnnotation
     private LocalDate releaseDate;
     @NotNull
@@ -27,7 +25,8 @@ public class Film {
     private long duration;
     private int rate;
     private final Mpa mpa;
-    private final Set<Genre> genres = new HashSet<>();
+    private final Set<Genre> genres = new TreeSet<>(Comparator.comparing(Genre::getId));
+    private final Set<Director> directors = new TreeSet<>(Comparator.comparing(Director::getId));
     @JsonIgnore
     private final transient Set<Integer> likes = new HashSet<>();
 
@@ -43,5 +42,9 @@ public class Film {
 
     public void addGenre(ResultSet rs) throws SQLException {
         genres.add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));
+    }
+
+    public void addDirector(ResultSet rs) throws SQLException {
+        directors.add(new Director(rs.getInt("director_id"), rs.getString("director_name")));
     }
 }
