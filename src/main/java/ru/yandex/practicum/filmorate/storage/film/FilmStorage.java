@@ -10,6 +10,8 @@ public interface FilmStorage {
 
     List<Film> getListAllFilms();
 
+    List<Film> getAllFilmsByDirectorId(int directorId, String sortBy);
+
     Film addFilm(Film film);
 
     Film deleteFilm(int id);
