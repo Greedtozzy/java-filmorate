@@ -78,7 +78,7 @@ user_id int not null references users(user_id) on delete cascade,
 event_type_id int not null references event_types(event_type_id) on delete cascade,
 event_operation_id int not null references event_operations(event_operation_id) on delete cascade,
 entity_id int not null,
-event_timestamp timestamp not null
+event_timestamp int not null
 );
 
 create table if not exists likes (

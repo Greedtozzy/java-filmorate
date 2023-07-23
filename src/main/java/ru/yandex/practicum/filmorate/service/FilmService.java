@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -12,12 +11,16 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
 
-    public FilmService(@Qualifier("filmDBStorage") FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
     }
 
     public List<Film> getListAllFilms() {
         return filmStorage.getListAllFilms();
+    }
+
+    public List<Film> getAllFilmsByDirectorId(int directorId, String sortBy) {
+        return filmStorage.getAllFilmsByDirectorId(directorId, sortBy);
     }
 
     public Film getFilmById(int id) {
@@ -46,5 +49,25 @@ public class FilmService {
 
     public List<Film> topFilms(int count) {
         return filmStorage.topFilms(count);
+    }
+
+    public List<Film> searchFilms(String query, String by) {
+        return filmStorage.searchFilms(query, by);
+    }
+
+    public List<Film> topFilmsByYear(int count, int year) {
+        return filmStorage.topFilmsByYear(count, year);
+    }
+
+    public List<Film> topFilmsByGenre(int count, int genreId) {
+        return filmStorage.topFilmsByGenre(count, genreId);
+    }
+
+    public List<Film> topFilmsByYearAndGenre(int count, int year, int genreId) {
+        return filmStorage.topFilmsByYearAndGenre(count, year, genreId);
+    }
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 }
