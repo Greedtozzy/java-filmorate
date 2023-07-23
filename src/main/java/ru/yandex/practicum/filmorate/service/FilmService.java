@@ -20,7 +20,7 @@ public class FilmService {
     }
 
     public List<Film> getAllFilmsByDirectorId(int directorId, String sortBy) {
-        return filmStorage.getAllFilmsByDirectorId(directorId,sortBy);
+        return filmStorage.getAllFilmsByDirectorId(directorId, sortBy);
     }
 
     public Film getFilmById(int id) {
@@ -51,6 +51,10 @@ public class FilmService {
         return filmStorage.topFilms(count);
     }
 
+    public List<Film> searchFilms(String query, String by) {
+        return filmStorage.searchFilms(query, by);
+    }
+
     public List<Film> topFilmsByYear(int count, int year) {
         return filmStorage.topFilmsByYear(count, year);
     }
@@ -61,8 +65,9 @@ public class FilmService {
 
     public List<Film> topFilmsByYearAndGenre(int count, int year, int genreId) {
         return filmStorage.topFilmsByYearAndGenre(count, year, genreId);
+    }
 
     public List<Film> getCommonFilms(int userId, int friendId) {
-        return filmStorage.getCommonFilms(userId,friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 }

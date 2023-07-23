@@ -24,11 +24,13 @@ public interface FilmStorage {
 
     List<Film> topFilms(int count);
 
-    public List<Film> topFilmsByYear(int count, int year);
+    List<Film> searchFilms(String query, String by);
 
-    public List<Film> topFilmsByGenre(int count, int genreId);
+    List<Film> topFilmsByYear(int count, int year);
 
-    public List<Film> topFilmsByYearAndGenre(int count, int year, int genreId);
+    List<Film> topFilmsByGenre(int count, int genreId);
+
+    List<Film> topFilmsByYearAndGenre(int count, int year, int genreId);
 
     List<Film> getCommonFilms(int userId, int friendId);
 }

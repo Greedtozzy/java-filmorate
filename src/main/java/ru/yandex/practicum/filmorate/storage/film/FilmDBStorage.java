@@ -239,6 +239,52 @@ public class FilmDBStorage implements FilmStorage {
         return filmsFinal;
     }
 
+    @Override
+    public List<Film> searchFilms(String query, String by) {
+        List<Film> films = getListAllFilms();
+
+        switch (by) {
+            case "title":
+                return films.stream()
+                        .filter(film -> film.getName().toLowerCase().contains(query.toLowerCase()))
+                        .sorted(Comparator.comparing(Film::getRate))
+                        .collect(Collectors.toList());
+            case "director":
+                return films.stream()
+                        .filter(film -> {
+                            boolean isContains = false;
+                            for (Director director : film.getDirectors()) {
+                                if (director.getName().toLowerCase().contains(query.toLowerCase())) {
+                                    isContains = true;
+                                    break;
+                                }
+                            }
+                            return isContains;
+                        })
+                        .sorted(Comparator.comparing(Film::getRate))
+                        .collect(Collectors.toList());
+            case "title,director":
+            case "director,title":
+                return films.stream()
+                        .filter(film -> {
+                            if (film.getName().toLowerCase().contains(query.toLowerCase())) {
+                                return true;
+                            }
+                            boolean isContains = false;
+                            for (Director director : film.getDirectors()) {
+                                if (director.getName().toLowerCase().contains(query.toLowerCase())) {
+                                    isContains = true;
+                                    break;
+                                }
+                            }
+                            return isContains;
+                        })
+                        .sorted(Comparator.comparing(Film::getRate))
+                        .collect(Collectors.toList());
+            default: return new ArrayList<>();
+        }
+    }
+
     private RowMapper<List<Film>> filmRowMapper() {
         return (rs, rowNum) -> {
             List<Film> films = new ArrayList<>();
