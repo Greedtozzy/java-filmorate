@@ -4,7 +4,7 @@
 --Касательно удаления таблиц/очистки таблиц.
 --Здесь я воспользовался методом, который посоветовал наставник во время вебинара.
 
-drop table if exists users, ratings_mpa, films, genres, film_genre, friendships_statuses, friendships;
+drop table if exists users, ratings_mpa, films, genres, film_genre, friendships_statuses, friendships, review, likes;
 
 create table if not exists users (
 user_id serial not null primary key,
@@ -44,4 +44,19 @@ create table if not exists friendships (
 user1_id int not null references users(user_id),
 user2_id int not null references users(user_id),
 primary key (user1_id, user2_id)
+);
+
+create table if not exists review (
+review_id serial not null primary key,
+review_content varchar(255) not null,
+review_is_positive boolean not null,
+user_id int references users(user_id) on delete cascade,
+film_id int references films(film_id) on delete cascade,
+review_useful int not null
+);
+
+create table if not exists likes (
+user_id int not null references users(user_id),
+film_id int not null references films(film_id),
+primary key (user_id, film_id)
 );

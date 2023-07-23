@@ -63,4 +63,10 @@ public class ErrorHandler {
     public ErrorResponse handleThrowable(Throwable e) {
         return new ErrorResponse(e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleReviewNotFoundException(ReviewNotFoundException e) {
+        return new ErrorResponse(e.getMessage());
+    }
 }
