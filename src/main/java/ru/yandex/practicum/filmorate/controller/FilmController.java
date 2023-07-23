@@ -24,6 +24,12 @@ public class FilmController {
         return filmService.getListAllFilms();
     }
 
+    @GetMapping ("/director/{directorId}")
+    public List<Film> getAllFilmsByDirectorId(@PathVariable int directorId, @RequestParam(value = "sortBy") String sortBy) {
+        log.debug("Film's list: {}", filmService.getAllFilmsByDirectorId(directorId,sortBy));
+        return filmService.getAllFilmsByDirectorId(directorId,sortBy);
+    }
+
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
         log.debug("Film added: {}", film);
@@ -65,8 +71,4 @@ public class FilmController {
         log.debug("Top {} films", count);
         return filmService.topFilms(count);
     }
-
-
-
-
 }
