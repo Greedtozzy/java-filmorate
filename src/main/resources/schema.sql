@@ -27,7 +27,7 @@ rating_mpa_id int references ratings_mpa(rating_id)
 
 create table if not exists reviews (
 review_id serial not null primary key,
-riview_content varchar(255) not null,
+review_content varchar(255) not null,
 review_is_positive boolean not null,
 user_id int references users(user_id) on delete cascade,
 film_id int references films(film_id) on delete cascade,
