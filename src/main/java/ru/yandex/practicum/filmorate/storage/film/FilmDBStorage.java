@@ -150,6 +150,7 @@ public class FilmDBStorage implements FilmStorage {
         } catch (EmptyResultDataAccessException e) {
             throw new UserNotFoundException(String.format("User by id %d not found", userId));
         }
+        jdbcTemplate.update("insert into likes (user_id, film_id) values (?, ?)", userId, filmId);
         jdbcTemplate.update("UPDATE films SET film_rating = ? WHERE film_id = ?",
                 filmRateById(filmId) + 1, filmId);
     }
@@ -163,6 +164,7 @@ public class FilmDBStorage implements FilmStorage {
         } catch (EmptyResultDataAccessException e) {
             throw new UserNotFoundException(String.format("User by id %d not found", userId));
         }
+        jdbcTemplate.update("delete from likes where user_id = ? and film_id = ?", userId, filmId);
         if (filmRateById(filmId) > 0) {
             jdbcTemplate.update("UPDATE films SET film_rating = ? WHERE film_id = ?",
                     filmRateById(filmId) - 1, filmId);
@@ -177,26 +179,47 @@ public class FilmDBStorage implements FilmStorage {
     @Override
     public List<Film> searchFilms(String query, String by) {
         List<Film> films = getListAllFilms();
-//        switch (by) {
-//            case "title":
-//                return films.stream()
-//                        .filter(film -> film.getName().contains(query))
-//                        .sorted(Comparator.comparing(Film::getRate))
-//                        .collect(Collectors.toList());
-//            case "director":
-//                return films.stream()
-//                        .filter(film -> film.getDirector().getName().contains(query))
-//                        .sorted(Comparator.comparing(Film::getRate))
-//                        .collect(Collectors.toList());
-//            case "director,title":
-//                return films.stream()
-//                        .filter(film -> film.getDirector().getName().contains(query) || film.getName().contains(query))
-//                        .sorted(Comparator.comparing(Film::getRate))
-//                        .collect(Collectors.toList());
-//            default:
-//                return new ArrayList<>();
-//        }
-        return null;
+
+        switch (by) {
+            case "title":
+                return films.stream()
+                        .filter(film -> film.getName().toLowerCase().contains(query.toLowerCase()))
+                        .sorted(Comparator.comparing(Film::getRate))
+                        .collect(Collectors.toList());
+            case "director":
+                return films.stream()
+                        .filter(film -> {
+                            boolean isContains = false;
+                            for (Director director : film.getDirectors()) {
+                                if (director.getName().toLowerCase().contains(query.toLowerCase())) {
+                                    isContains = true;
+                                    break;
+                                }
+                            }
+                            return isContains;
+                        })
+                        .sorted(Comparator.comparing(Film::getRate))
+                        .collect(Collectors.toList());
+            case "title,director":
+            case "director,title":
+                return films.stream()
+                        .filter(film -> {
+                            if (film.getName().toLowerCase().contains(query.toLowerCase())) {
+                                return true;
+                            }
+                            boolean isContains = false;
+                            for (Director director : film.getDirectors()) {
+                                if (director.getName().toLowerCase().contains(query.toLowerCase())) {
+                                    isContains = true;
+                                    break;
+                                }
+                            }
+                            return isContains;
+                        })
+                        .sorted(Comparator.comparing(Film::getRate))
+                        .collect(Collectors.toList());
+            default: return new ArrayList<>();
+        }
     }
 
     private RowMapper<List<Film>> filmRowMapper() {
