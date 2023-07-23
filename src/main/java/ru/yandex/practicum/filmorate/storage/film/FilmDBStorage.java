@@ -176,20 +176,12 @@ public class FilmDBStorage implements FilmStorage {
 
     @Override
     public List<Film> topFilmsByYear(int count, int year) {
-        String sql = "select f.film_id, f.film_name, f.film_description, f.film_release_date, " +
-                "f.film_duration, f.film_rating, f.rating_mpa_id, rm.rating_name, " +
-                "fg.genre_id, g.genre_name, l.user_id " +
-                "from films f " +
-                "left join film_genre fg on f.film_id = fg.film_id " +
-                "left join genres g on fg.genre_id = g.genre_id " +
-                "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
-                "left join likes l on f.film_id = l.film_id " +
-                "where extract(YEAR from f.film_release_date) = ?" +
-                "order by film_rating desc";
+
         List<Film> filmsFromDataBase;
         List<Film> filmsFinal = new ArrayList<>(count);
         try {
-            filmsFromDataBase = jdbcTemplate.queryForObject(sql, filmRowMapper(), year);
+            filmsFromDataBase = jdbcTemplate.queryForObject(sql + "where extract(YEAR from f.film_release_date) = ? " +
+                    "order by film_rating desc", filmRowMapper(), year);
             for (Film film : filmsFromDataBase) {
                 filmsFinal.add(getFilmById(film.getId()));
             }
@@ -202,21 +194,11 @@ public class FilmDBStorage implements FilmStorage {
 
     @Override
     public List<Film> topFilmsByGenre(int count, int genreId) {
-        String sql = "select f.film_id, f.film_name, f.film_description, f.film_release_date, " +
-                "f.film_duration, f.film_rating, f.rating_mpa_id, rm.rating_name, " +
-                "fg.genre_id, g.genre_name, l.user_id " +
-                "from films f " +
-                "left join film_genre fg on f.film_id = fg.film_id " +
-                "left join genres g on fg.genre_id = g.genre_id " +
-                "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
-                "left join likes l on f.film_id = l.film_id " +
-                "where g.genre_id = ?" +
-                "order by film_rating desc";
-
         List<Film> filmsFromDataBase;
         List<Film> filmsFinal = new ArrayList<>(count);
         try {
-            filmsFromDataBase = jdbcTemplate.queryForObject(sql, filmRowMapper(), genreId);
+            filmsFromDataBase = jdbcTemplate.queryForObject(sql + "where g.genre_id = ? " +
+                    "order by film_rating desc", filmRowMapper(), genreId);
             for (Film film : filmsFromDataBase) {
                 filmsFinal.add(getFilmById(film.getId()));
             }
@@ -229,21 +211,11 @@ public class FilmDBStorage implements FilmStorage {
 
     @Override
     public List<Film> topFilmsByYearAndGenre(int count, int year, int genreId) {
-        String sql = "select f.film_id, f.film_name, f.film_description, f.film_release_date, " +
-                "f.film_duration, f.film_rating, f.rating_mpa_id, rm.rating_name, " +
-                "fg.genre_id, g.genre_name, l.user_id " +
-                "from films f " +
-                "left join film_genre fg on f.film_id = fg.film_id " +
-                "left join genres g on fg.genre_id = g.genre_id " +
-                "left join ratings_mpa rm on f.rating_mpa_id = rm.rating_id " +
-                "left join likes l on f.film_id = l.film_id " +
-                "where g.genre_id = ? and extract(YEAR from f.film_release_date) = ?" +
-                "order by film_rating desc";
-
         List<Film> filmsFromDataBase;
         List<Film> filmsFinal = new ArrayList<>(count);
         try {
-            filmsFromDataBase = jdbcTemplate.queryForObject(sql, filmRowMapper(), genreId, year);
+            filmsFromDataBase = jdbcTemplate.queryForObject(sql + "where g.genre_id = ? and extract(YEAR from f.film_release_date) = ? " +
+                    "order by film_rating desc", filmRowMapper(), genreId, year);
             for (Film film : filmsFromDataBase) {
                 filmsFinal.add(getFilmById(film.getId()));
             }
