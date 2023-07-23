@@ -21,7 +21,7 @@ public class Review {
     final Integer userId;
     @NotNull
     final Integer filmId;
-    int useful = 0;
+    int useful;
 
 
     public void setIsPositive(boolean isPositive) {

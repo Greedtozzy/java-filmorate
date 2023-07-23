@@ -16,11 +16,6 @@ import java.util.List;
 public class ReviewController {
     private final ReviewService reviewService;
 
-    @GetMapping
-    public List<Review> getAllReviews() {
-        return reviewService.getAllReviews();
-    }
-
     @PostMapping
     public Review addReview(@Valid @RequestBody Review review) {
         return reviewService.addReview(review);
@@ -41,7 +36,7 @@ public class ReviewController {
         return reviewService.getReviewById(id);
     }
 
-    @GetMapping("?filmId={filmId}&count={count}")
+    @GetMapping
     public List<Review> getReviewList(@RequestParam(value = "filmId", defaultValue = "0", required = false)
                                       int filmId,
                                       @RequestParam(value = "count", defaultValue = "10", required = false)
