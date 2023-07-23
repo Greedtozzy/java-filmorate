@@ -51,6 +51,17 @@ public class FilmService {
         return filmStorage.topFilms(count);
     }
 
+    public List<Film> topFilmsByYear(int count, int year) {
+        return filmStorage.topFilmsByYear(count, year);
+    }
+
+    public List<Film> topFilmsByGenre(int count, int genreId) {
+        return filmStorage.topFilmsByGenre(count, genreId);
+    }
+
+    public List<Film> topFilmsByYearAndGenre(int count, int year, int genreId) {
+        return filmStorage.topFilmsByYearAndGenre(count, year, genreId);
+
     public List<Film> getCommonFilms(int userId, int friendId) {
         return filmStorage.getCommonFilms(userId,friendId);
     }

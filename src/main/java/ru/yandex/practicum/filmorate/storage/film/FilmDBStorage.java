@@ -187,6 +187,58 @@ public class FilmDBStorage implements FilmStorage {
         return jdbcTemplate.queryForObject(sql + "order by film_rating desc limit ?", filmRowMapper(), count);
     }
 
+    @Override
+    public List<Film> topFilmsByYear(int count, int year) {
+
+        List<Film> filmsFromDataBase;
+        List<Film> filmsFinal = new ArrayList<>(count);
+        try {
+            filmsFromDataBase = jdbcTemplate.queryForObject(sql + "where extract(YEAR from f.film_release_date) = ? " +
+                    "order by film_rating desc", filmRowMapper(), year);
+            for (Film film : filmsFromDataBase) {
+                filmsFinal.add(getFilmById(film.getId()));
+            }
+            return filmsFinal;
+        } catch (EmptyResultDataAccessException ignored) {
+
+        }
+        return filmsFinal;
+    }
+
+    @Override
+    public List<Film> topFilmsByGenre(int count, int genreId) {
+        List<Film> filmsFromDataBase;
+        List<Film> filmsFinal = new ArrayList<>(count);
+        try {
+            filmsFromDataBase = jdbcTemplate.queryForObject(sql + "where g.genre_id = ? " +
+                    "order by film_rating desc", filmRowMapper(), genreId);
+            for (Film film : filmsFromDataBase) {
+                filmsFinal.add(getFilmById(film.getId()));
+            }
+            return filmsFinal;
+        } catch (EmptyResultDataAccessException ignored) {
+
+        }
+        return filmsFinal;
+    }
+
+    @Override
+    public List<Film> topFilmsByYearAndGenre(int count, int year, int genreId) {
+        List<Film> filmsFromDataBase;
+        List<Film> filmsFinal = new ArrayList<>(count);
+        try {
+            filmsFromDataBase = jdbcTemplate.queryForObject(sql + "where g.genre_id = ? and extract(YEAR from f.film_release_date) = ? " +
+                    "order by film_rating desc", filmRowMapper(), genreId, year);
+            for (Film film : filmsFromDataBase) {
+                filmsFinal.add(getFilmById(film.getId()));
+            }
+            return filmsFinal;
+        } catch (EmptyResultDataAccessException ignored) {
+
+        }
+        return filmsFinal;
+    }
+
     private RowMapper<List<Film>> filmRowMapper() {
         return (rs, rowNum) -> {
             List<Film> films = new ArrayList<>();
