@@ -23,4 +23,10 @@ public interface FilmStorage {
     void deleteLike(int userId, int filmId);
 
     List<Film> topFilms(int count);
+
+    public List<Film> topFilmsByYear(int count, int year);
+
+    public List<Film> topFilmsByGenre(int count, int genreId);
+
+    public List<Film> topFilmsByYearAndGenre(int count, int year, int genreId);
 }
