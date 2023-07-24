@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 
 import java.util.List;
@@ -11,16 +12,23 @@ import java.util.List;
 @AllArgsConstructor
 public class ReviewService {
     private final ReviewStorage reviewStorage;
+    private final EventStorage eventStorage;
 
     public Review addReview(Review review) {
-        return reviewStorage.addReview(review);
+        Review newReview = reviewStorage.addReview(review);
+        eventStorage.addEvent(newReview.getReviewId(), "REVIEW", "ADD", newReview.getUserId());
+        return newReview;
     }
 
     public Review updateReview(Review review) {
-        return reviewStorage.updateReview(review);
+        Review updatedReview = reviewStorage.updateReview(review);
+        eventStorage.addEvent(updatedReview.getReviewId(), "REVIEW", "UPDATE", updatedReview.getUserId());
+        return updatedReview;
     }
 
     public void deleteReview(int id) {
+        Review review = reviewStorage.getReviewById(id);
+        eventStorage.addEvent(review.getReviewId(), "REVIEW", "REMOVE", review.getUserId());
         reviewStorage.deleteReview(id);
     }
 
