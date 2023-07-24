@@ -162,13 +162,12 @@ public class ReviewDBStorage implements ReviewStorage {
                         reviewId, userId);
             }
         } else {
-            jdbcTemplate.update("INSERT INTO review_like(like_user_id, review_id, is_like) values (?, ?, true);"
-                    , userId, reviewId);
+            jdbcTemplate.update("INSERT INTO review_like(like_user_id, review_id, is_like) values (?, ?, true);",
+                    userId, reviewId);
             jdbcTemplate.update("UPDATE reviews SET review_useful = ? WHERE review_id = ?;",
                     (getReviewById(reviewId).getUseful() + 1), reviewId);
         }
-        Review rev = getReviewById(reviewId);
-        return rev;
+        return getReviewById(reviewId);
     }
 
     @Override
