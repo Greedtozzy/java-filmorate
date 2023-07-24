@@ -75,4 +75,17 @@ public class ErrorHandler {
     public ErrorResponse handleReviewNotFoundException(ReviewNotFoundException e) {
         return new ErrorResponse(e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleLikeOrDislikeNotFoundException(LikeOrDislikeNotFound e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleLikeOrDislikeForReviewAlreadyExistException
+            (LikeOrDislikeForReviewAlreadyExistException e) {
+        return new ErrorResponse(e.getMessage());
+    }
 }

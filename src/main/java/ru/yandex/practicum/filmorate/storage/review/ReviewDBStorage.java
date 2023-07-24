@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.LikeOrDislikeForReviewAlreadyExistException;
+import ru.yandex.practicum.filmorate.exceptions.LikeOrDislikeNotFound;
 import ru.yandex.practicum.filmorate.exceptions.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.film.FilmDBStorage;
@@ -24,6 +26,15 @@ public class ReviewDBStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FilmDBStorage filmDBStorage;
     private final UserDBStorage userDBStorage;
+
+    private final String sqlGet = "SELECT r.review_id, " +
+            "r.review_content, " +
+            "r.review_is_positive, " +
+            "r.user_id, " +
+            "r.film_id, " +
+            "r.review_useful, " +
+            "rl.is_like, " +
+            "rl.like_user_id FROM reviews r left join review_like rl on r.review_id = rl.review_id ";
 
     @Override
     public Review addReview(Review review) {
@@ -68,11 +79,11 @@ public class ReviewDBStorage implements ReviewStorage {
     public List<Review> getReviewListWithParam(int filmId, int count) {
         try {
             if (filmId == 0) {
-                return jdbcTemplate.queryForObject("SELECT * FROM reviews ORDER BY review_useful DESC LIMIT ?;",
+                return jdbcTemplate.queryForObject(sqlGet + "ORDER BY r.review_useful DESC LIMIT ?;",
                         reviewRowMapper(), count);
 
             } else {
-                String sqlQuery = "SELECT * FROM reviews WHERE film_id = ? ORDER BY review_useful DESC" +
+                String sqlQuery = sqlGet + "WHERE r.film_id = ? ORDER BY r.review_useful DESC" +
                         " LIMIT ?;";
                 return jdbcTemplate.queryForObject(sqlQuery, reviewRowMapper(), filmId, count);
             }
@@ -85,7 +96,7 @@ public class ReviewDBStorage implements ReviewStorage {
     @Override
     public List<Review> getAllReviews() {
         try {
-            return jdbcTemplate.queryForObject("SELECT * FROM reviews;", reviewRowMapper())
+            return jdbcTemplate.queryForObject(sqlGet, reviewRowMapper())
                     .stream()
                     .sorted(Comparator.comparing(Review::getUseful))
                     .collect(Collectors.toList());
@@ -98,8 +109,7 @@ public class ReviewDBStorage implements ReviewStorage {
     @Override
     public Review getReviewById(int id) {
         try {
-            String sqlQuery = "SELECT review_id, review_content, review_is_positive, " +
-                    "user_id, film_id, review_useful FROM reviews WHERE review_id = ?;";
+            String sqlQuery = sqlGet + "WHERE r.review_id = ?;";
             List<Review> reviews = jdbcTemplate.queryForObject(sqlQuery, reviewRowMapper(), id);
             return reviews.get(0);
         } catch (EmptyResultDataAccessException e) {
@@ -110,13 +120,24 @@ public class ReviewDBStorage implements ReviewStorage {
     private RowMapper<List<Review>> reviewRowMapper() {
         return (rs, rowNum) -> {
             List<Review> reviews = new ArrayList<>();
+            Review review = new Review(rs.getInt("review_id"),
+                    rs.getString("review_content"),
+                    rs.getBoolean("review_is_positive"),
+                    rs.getInt("user_id"),
+                    rs.getInt("film_id"),
+                    rs.getInt(("review_useful")));
             do {
-                Review review = new Review(rs.getInt("review_id"),
-                        rs.getString("review_content"),
-                        rs.getBoolean("review_is_positive"),
-                        rs.getInt("user_id"),
-                        rs.getInt("film_id"),
-                        rs.getInt(("review_useful")));
+                if (review.getReviewId() == rs.getInt("review_id")) {
+                    review.getLikes().put(rs.getInt("like_user_id"), rs.getBoolean("is_like"));
+                } else {
+                    review = new Review(rs.getInt("review_id"),
+                            rs.getString("review_content"),
+                            rs.getBoolean("review_is_positive"),
+                            rs.getInt("user_id"),
+                            rs.getInt("film_id"),
+                            rs.getInt(("review_useful")));
+                    review.getLikes().put(rs.getInt("like_user_id"), rs.getBoolean("is_like"));
+                }
                 if (!reviews
                         .stream()
                         .map(Review::getReviewId)
@@ -131,21 +152,53 @@ public class ReviewDBStorage implements ReviewStorage {
 
     @Override
     public Review addLikeToReview(int reviewId, int userId) {
-
-        jdbcTemplate.update("UPDATE reviews SET review_useful = ? WHERE review_id = ?;",
-                (getReviewById(reviewId).getUseful() + 1), reviewId);
-        return getReviewById(reviewId);
+        if (getReviewById(reviewId).getLikes().containsKey(userId)) {
+            if (getReviewById(reviewId).getLikes().get(userId)) {
+                throw new LikeOrDislikeForReviewAlreadyExistException("like already exist");
+            } else {
+                jdbcTemplate.update("UPDATE reviews SET review_useful = ? WHERE review_id = ?;",
+                        (getReviewById(reviewId).getUseful() + 2), reviewId);
+                jdbcTemplate.update("Update review_like set is_like = true where like_user_id = ? AND review _id = ?;",
+                        reviewId, userId);
+            }
+        } else {
+            jdbcTemplate.update("INSERT INTO review_like(like_user_id, review_id, is_like) values (?, ?, true);"
+                    , userId, reviewId);
+            jdbcTemplate.update("UPDATE reviews SET review_useful = ? WHERE review_id = ?;",
+                    (getReviewById(reviewId).getUseful() + 1), reviewId);
+        }
+        Review rev = getReviewById(reviewId);
+        return rev;
     }
 
     @Override
     public Review addDislikeToReview(int reviewId, int userId) {
-        jdbcTemplate.update("UPDATE reviews SET review_useful = ? WHERE review_id = ?;",
-                getReviewById(reviewId).getUseful() - 1, reviewId);
+        if (getReviewById(reviewId).getLikes().containsKey(userId)) {
+            if (!getReviewById(reviewId).getLikes().get(userId)) {
+                throw new LikeOrDislikeForReviewAlreadyExistException("dislike already exist");
+            } else {
+                jdbcTemplate.update("UPDATE reviews SET review_useful = ? WHERE review_id = ?;",
+                        (getReviewById(reviewId).getUseful() - 2), reviewId);
+                jdbcTemplate.update("Update review_like set is_like = false where like_user_id = ? AND review _id = ?;",
+                        userId, reviewId);
+            }
+        } else {
+            jdbcTemplate.update("INSERT INTO review_like(like_user_id, review_id, is_like) values (?, ?, false);",
+                    userId, reviewId);
+            jdbcTemplate.update("UPDATE reviews SET review_useful = ? WHERE review_id = ?;",
+                    getReviewById(reviewId).getUseful() - 1, reviewId);
+        }
         return getReviewById(reviewId);
     }
 
     @Override
     public Review deleteLikeFromReview(int reviewId, int userId) {
+        if (!getReviewById(reviewId).getLikes().containsKey(userId) ||
+                (getReviewById(reviewId).getLikes().containsKey(userId) &&
+                        !getReviewById(reviewId).getLikes().get(userId))) {
+            throw new LikeOrDislikeNotFound("not found such like");
+        }
+        jdbcTemplate.update("DELETE FROM review_like where review_id = ? AND like_user_id = ?;", reviewId, userId);
         jdbcTemplate.update("UPDATE reviews SET review_useful = ? WHERE review_id = ?;",
                 getReviewById(reviewId).getUseful() - 1, reviewId);
         return getReviewById(reviewId);
@@ -153,6 +206,12 @@ public class ReviewDBStorage implements ReviewStorage {
 
     @Override
     public Review deleteDislikeFromReview(int reviewId, int userId) {
+        if (!getReviewById(reviewId).getLikes().containsKey(userId) ||
+                (getReviewById(reviewId).getLikes().containsKey(userId) &&
+                        getReviewById(reviewId).getLikes().get(userId))) {
+            throw new LikeOrDislikeNotFound("not found such dislike");
+        }
+        jdbcTemplate.update("DELETE FROM review_like where review_id = ? AND like_user_id = ?;", reviewId, userId);
         jdbcTemplate.update("UPDATE reviews SET review_useful = ? WHERE review_id = ?;",
                 getReviewById(reviewId).getUseful() + 1, reviewId);
         return getReviewById(reviewId);
