@@ -1,5 +1,5 @@
 drop table if exists users, ratings_mpa, films, genres, film_genre, friendships, reviews,
-directors, film_director, event_types, event_operations, events, likes;
+directors, film_director, event_types, event_operations, events, likes, review_like;
 
 
 create table if not exists users (
@@ -85,4 +85,11 @@ create table if not exists likes (
 user_id int not null references users(user_id),
 film_id int not null references films(film_id),
 primary key (user_id, film_id)
+);
+
+create table if not exists review_like (
+like_user_id int not null references users(user_id) on delete cascade,
+review_id int not null references reviews(review_id) on delete cascade,
+is_like boolean not null,
+primary key (like_user_id, review_id)
 );
