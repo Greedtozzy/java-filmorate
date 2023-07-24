@@ -84,8 +84,8 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleLikeOrDislikeForReviewAlreadyExistException
-            (LikeOrDislikeForReviewAlreadyExistException e) {
+    public ErrorResponse handleLikeOrDislikeForReviewAlreadyExistException(
+            LikeOrDislikeForReviewAlreadyExistException e) {
         return new ErrorResponse(e.getMessage());
     }
 }
