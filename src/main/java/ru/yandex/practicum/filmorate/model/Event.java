@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Event {
-    int id;
+    int eventId;
     int entityId;
     String eventType;
     String operation;
