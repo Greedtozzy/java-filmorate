@@ -1,26 +1,24 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import lombok.AllArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmDBStorage;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+@AllArgsConstructor
 public class UserDBStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    public UserDBStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final FilmDBStorage filmDBStorage;
 
     @Override
     public User getUserById(int id) {
@@ -78,17 +76,19 @@ public class UserDBStorage implements UserStorage {
         return user;
     }
 
-/** По моему мнению, список лайков и друзей не должен обновляться при изменении данных пользователя.
- * Если требуется учитывать и их тоже, то исправлю.*/
+    /**
+     * По моему мнению, список лайков и друзей не должен обновляться при изменении данных пользователя.
+     * Если требуется учитывать и их тоже, то исправлю.
+     */
     @Override
     public User updateUser(User user) {
         getUserById(user.getId());
         jdbcTemplate.update("UPDATE users " +
-                "SET user_name = ?, " +
-                "user_login = ?, " +
-                "user_email = ?, " +
-                "user_birthday = ? " +
-                "WHERE user_id = ?",
+                        "SET user_name = ?, " +
+                        "user_login = ?, " +
+                        "user_email = ?, " +
+                        "user_birthday = ? " +
+                        "WHERE user_id = ?",
                 user.getName(),
                 user.getLogin(),
                 user.getEmail(),
@@ -118,6 +118,7 @@ public class UserDBStorage implements UserStorage {
 
     @Override
     public List<User> listAllFriends(int id) {
+        getUserById(id);
         try {
             return jdbcTemplate.queryForObject("SELECT u.user_id, u.user_name, u.user_login, " +
                     "u.user_email, u.user_birthday, f2.user2_id from friendships f " +
@@ -154,5 +155,47 @@ public class UserDBStorage implements UserStorage {
             } while (rs.next());
             return users;
         };
+    }
+
+    @Override
+    public List<Film> getRecommendations(int id) {
+        User user = getUserById(id);
+        User mostCrossUser = null;
+        List<Integer> likes = likesFromUser(user);
+        List<User> users = getListAllUsers();
+        int count = 0;
+        for (User u : users) {
+            if (!u.equals(user)) {
+                List<Integer> uLikes = likesFromUser(u);
+                int uCount = (int) likes.stream()
+                        .filter(uLikes::contains).count();
+                if (uCount > count) {
+                    count = uCount;
+                    mostCrossUser = u;
+                }
+            }
+        }
+        if (mostCrossUser == null) {
+            return new ArrayList<>();
+        }
+        return likesFromUser(mostCrossUser).stream()
+                .filter(i -> !likesFromUser(user).contains(i))
+                .map(filmDBStorage::getFilmById)
+                .collect(Collectors.toList());
+    }
+
+    private List<Integer> likesFromUser(User user) {
+        try {
+            return jdbcTemplate.queryForObject("select film_id from likes where user_id = ?",
+                    (rs, rowNum) -> {
+                        List<Integer> l = new ArrayList<>();
+                        do {
+                            l.add(rs.getInt("film_id"));
+                        } while (rs.next());
+                        return l;
+                    }, user.getId());
+        } catch (EmptyResultDataAccessException e) {
+            return new ArrayList<>();
+        }
     }
 }

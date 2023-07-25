@@ -57,8 +57,8 @@ primary key (film_id, genre_id)
 );
 
 create table if not exists friendships (
-user1_id int not null references users(user_id),
-user2_id int not null references users(user_id),
+user1_id int not null references users(user_id) on delete cascade,
+user2_id int not null references users(user_id) on delete cascade,
 primary key (user1_id, user2_id)
 );
 
@@ -82,8 +82,8 @@ event_timestamp bigint not null
 );
 
 create table if not exists likes (
-user_id int not null references users(user_id),
-film_id int not null references films(film_id),
+user_id int not null references users(user_id) on delete cascade,
+film_id int not null references films(film_id) on delete cascade,
 primary key (user_id, film_id)
 );
 

@@ -103,16 +103,16 @@ public class FilmDBStorage implements FilmStorage {
             stmt.setString(2, film.getDescription());
             stmt.setDate(3, Date.valueOf(film.getReleaseDate()));
             stmt.setLong(4, film.getDuration());
-            stmt.setLong(5, film.getRate());
+            stmt.setLong(5, 0);
             stmt.setLong(6, film.getMpa().getId());
             return stmt;
         }, keyHolder);
         film.setId(keyHolder.getKey().intValue());
 
-        saveGenres(film);
+        addFilmGenres(film);
         saveDirectors(film);
 
-        return film;
+        return getFilmById(keyHolder.getKey().intValue());
     }
 
     @Override
@@ -129,14 +129,14 @@ public class FilmDBStorage implements FilmStorage {
                         "SET film_name = ?, " +
                         "film_description = ?, " +
                         "film_release_date = ?, " +
-                        "film_duration = ?, " +
-                        "film_rating = ? " +
+                        "film_duration = ? " +
+//                        "film_rating = ? " +
                         "WHERE film_id = ?",
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                film.getRate(),
+//                film.getRate(),
                 film.getId());
 
         if (film.getMpa().getId() > 0 && film.getMpa().getId() < 6) {
@@ -184,7 +184,15 @@ public class FilmDBStorage implements FilmStorage {
 
     @Override
     public List<Film> topFilms(int count) {
-        return jdbcTemplate.queryForObject(sql + "order by film_rating desc limit ?", filmRowMapper(), count);
+        List<Film> films = jdbcTemplate.queryForObject(sql + "order by film_rating desc", filmRowMapper());
+        List<Film> top = new ArrayList<>();
+        if (count > films.size()) {
+            count = films.size();
+        }
+        for (int i = 0; i < count; i++) {
+            top.add(films.get(i));
+        }
+        return top;
     }
 
     @Override
@@ -247,7 +255,7 @@ public class FilmDBStorage implements FilmStorage {
             case "title":
                 return films.stream()
                         .filter(film -> film.getName().toLowerCase().contains(query.toLowerCase()))
-                        .sorted(Comparator.comparing(Film::getRate))
+                        .sorted(Comparator.comparing(Film::getRate).reversed())
                         .collect(Collectors.toList());
             case "director":
                 return films.stream()
@@ -261,7 +269,7 @@ public class FilmDBStorage implements FilmStorage {
                             }
                             return isContains;
                         })
-                        .sorted(Comparator.comparing(Film::getRate))
+                        .sorted(Comparator.comparing(Film::getRate).reversed())
                         .collect(Collectors.toList());
             case "title,director":
             case "director,title":
@@ -279,7 +287,7 @@ public class FilmDBStorage implements FilmStorage {
                             }
                             return isContains;
                         })
-                        .sorted(Comparator.comparing(Film::getRate))
+                        .sorted(Comparator.comparing(Film::getRate).reversed())
                         .collect(Collectors.toList());
             default: return new ArrayList<>();
         }
@@ -305,6 +313,9 @@ public class FilmDBStorage implements FilmStorage {
                     if (rs.getInt("director_id") != 0) {
                         film.addDirector(rs);
                     }
+                    if (rs.getInt("user_id") != 0) {
+                        film.getLikes().add(rs.getInt("user_id"));
+                    }
                 } else {
                     film = new Film(rs.getInt("film_id"),
                             rs.getString("film_name"),
@@ -318,6 +329,9 @@ public class FilmDBStorage implements FilmStorage {
                     }
                     if (rs.getInt("director_id") != 0) {
                         film.addDirector(rs);
+                    }
+                    if (rs.getInt("user_id") != 0) {
+                        film.getLikes().add(rs.getInt("user_id"));
                     }
                 }
                 if (!films.stream()
@@ -333,13 +347,6 @@ public class FilmDBStorage implements FilmStorage {
     private Integer filmRateById(int filmId) {
         return jdbcTemplate.queryForObject("select film_rating from films where film_id = ?",
                 (rs, rowNum) -> rs.getInt("film_rating"), filmId);
-    }
-
-    private void saveGenres(Film film) {
-        String sql = "insert into film_genre (film_id, genre_id) values (?, ?)";
-        for (Genre genre : film.getGenres()) {
-            jdbcTemplate.update(sql, film.getId(), genre.getId());
-        }
     }
 
     private void saveDirectors(Film film) {

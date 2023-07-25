@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -54,5 +56,9 @@ public class UserService {
         return userStorage.getUserById(id0).getFriendsList().stream()
                 .filter(userStorage.getUserById(id1).getFriendsList()::contains).filter(i -> i != 0)
                 .map(userStorage::getUserById).distinct().collect(Collectors.toList());
+    }
+
+    public List<Film> getRecommendations(@PathVariable int id) {
+        return userStorage.getRecommendations(id);
     }
 }
