@@ -159,9 +159,14 @@ public class FilmDBStorage implements FilmStorage {
         } catch (EmptyResultDataAccessException e) {
             throw new UserNotFoundException(String.format("User by id %d not found", userId));
         }
-        jdbcTemplate.update("insert into likes (user_id, film_id) values (?, ?)", userId, filmId);
-        jdbcTemplate.update("UPDATE films SET film_rating = ? WHERE film_id = ?",
-                filmRateById(filmId) + 1, filmId);
+        try {
+            jdbcTemplate.queryForObject("select * from likes where user_id = ? and film_id =?",
+                    (rs, rowNum) -> rs.getInt("user_id"), userId, filmId);
+        } catch (EmptyResultDataAccessException e) {
+            jdbcTemplate.update("insert into likes (user_id, film_id) values (?, ?)", userId, filmId);
+            jdbcTemplate.update("UPDATE films SET film_rating = ? WHERE film_id = ?",
+                    filmRateById(filmId) + 1, filmId);
+        }
     }
 
     @Override
