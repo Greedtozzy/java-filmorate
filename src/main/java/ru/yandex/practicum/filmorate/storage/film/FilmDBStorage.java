@@ -130,13 +130,11 @@ public class FilmDBStorage implements FilmStorage {
                         "film_description = ?, " +
                         "film_release_date = ?, " +
                         "film_duration = ? " +
-//                        "film_rating = ? " +
                         "WHERE film_id = ?",
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-//                film.getRate(),
                 film.getId());
 
         if (film.getMpa().getId() > 0 && film.getMpa().getId() < 6) {

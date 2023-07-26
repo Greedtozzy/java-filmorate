@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class UserService {
-
     private final UserStorage userStorage;
     private final EventStorage eventStorage;
 

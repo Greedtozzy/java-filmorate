@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.validators.CustomTextAnnotation;
 
 import javax.validation.constraints.*;
@@ -12,17 +14,18 @@ import java.util.Set;
 
 @Data
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
-    private int id;
+    int id;
     @Email
     @NotEmpty
-    private String email;
+    String email;
     @NotBlank
     @CustomTextAnnotation
-    private String login;
-    private String name;
+    String login;
+    String name;
     @PastOrPresent
-    private LocalDate birthday;
+    LocalDate birthday;
     @JsonIgnore
-    private final transient Set<Integer> friendsList = new HashSet<>();
+    final transient Set<Integer> friendsList = new HashSet<>();
 }

@@ -76,10 +76,6 @@ public class UserDBStorage implements UserStorage {
         return user;
     }
 
-    /**
-     * По моему мнению, список лайков и друзей не должен обновляться при изменении данных пользователя.
-     * Если требуется учитывать и их тоже, то исправлю.
-     */
     @Override
     public User updateUser(User user) {
         getUserById(user.getId());

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -11,12 +12,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 @Slf4j
+@AllArgsConstructor
 public class FilmController {
     private final FilmService filmService;
-
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
 
     @GetMapping
     public List<Film> allFilms() {
@@ -72,12 +70,15 @@ public class FilmController {
                                   @RequestParam(value = "year", defaultValue = "0", required = false) int year) {
 
         if (genreId > 0 && year <= 0) {
+            log.debug("Top {} films by genre id {}", count, genreId);
             return filmService.topFilmsByGenre(count, genreId);
         }
         if (genreId <= 0 && year > 0) {
+            log.debug("Top {} films by year {}", count, year);
             return filmService.topFilmsByYear(count, year);
         }
         if (genreId > 0 && year > 0) {
+            log.debug("Top {} films by year {} and genre id {}", count, year, genreId);
             return filmService.topFilmsByYearAndGenre(count, year, genreId);
         } else {
             log.debug("Top {} films", count);
@@ -87,11 +88,13 @@ public class FilmController {
 
     @GetMapping("/common")
     public List<Film> getCommonFilms(@RequestParam(value = "userId") int userId, @RequestParam(value = "friendId") int friendId) {
+        log.debug("Common films user id {} and user id {}", userId, friendId);
         return filmService.getCommonFilms(userId,friendId);
     }
 
     @GetMapping("/search")
     public List<Film> searchFilms(@RequestParam(value = "query") String query, @RequestParam(value = "by") String by) {
+        log.debug("Search films by {} and query {}", by, query);
         return filmService.searchFilms(query, by);
     }
 }

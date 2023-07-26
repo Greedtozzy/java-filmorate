@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -11,12 +12,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/directors")
 @Slf4j
+@AllArgsConstructor
 public class DirectorController {
     private final DirectorService directorService;
-
-    public DirectorController(DirectorService directorService) {
-        this.directorService = directorService;
-    }
 
     @GetMapping
     public List<Director> getListAllDirectors() {
