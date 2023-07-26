@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
@@ -16,7 +15,7 @@ public class EventService {
     private final UserDBStorage userStorage;
 
     public List<Event> getAllEvents(int id) {
-        userStorage.getUserById(id); // проверка существования пользователя
+        userStorage.getUserById(id);
         return eventStorage.getAllEvents(id);
     }
 }
