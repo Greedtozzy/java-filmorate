@@ -2,8 +2,8 @@
 Template repository for Filmorate project.
 
 <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="src/main/resources/DB.png">
-    <img src="src/main/resources/DB.png">
+    <source media="(prefers-color-scheme: dark)" srcset="/Filmorate DB v3.0.png">
+    <img src="/Filmorate DB v3.0.png">
 </picture>
 
 ## Приложение представляет из себя
