@@ -1,7 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.director;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -16,7 +14,6 @@ import java.util.Map;
 
 @Component
 public class DirectorDBStorage implements DirectorStorage {
-    private final Logger log = LoggerFactory.getLogger(DirectorDBStorage.class);
     private final JdbcTemplate jdbcTemplate;
     private final SimpleJdbcInsert simpleJdbcInsert;
 
@@ -37,9 +34,7 @@ public class DirectorDBStorage implements DirectorStorage {
     public Director getDirectorById(int id) {
         String sqlDirector = "SELECT * FROM directors WHERE director_id = ?";
         try {
-            Director director = jdbcTemplate.queryForObject(sqlDirector, (rs, rowNum) -> makeDirector(rs), id);
-            log.info("Найден режиссёр: {} {}", director.getId(), director.getName());
-            return director;
+            return jdbcTemplate.queryForObject(sqlDirector, (rs, rowNum) -> makeDirector(rs), id);
         } catch (EmptyResultDataAccessException e) {
             throw new DirectorNotFoundException("Режиссёр с идентификатором " +
                     id + " не зарегистрирован!");
