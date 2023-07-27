@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 public class DirectorDBStorage implements DirectorStorage {
@@ -19,7 +20,7 @@ public class DirectorDBStorage implements DirectorStorage {
 
     public DirectorDBStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate.getDataSource())
+        this.simpleJdbcInsert = new SimpleJdbcInsert(Objects.requireNonNull(jdbcTemplate.getDataSource()))
                 .withTableName("directors")
                 .usingGeneratedKeyColumns("director_id");
     }
@@ -68,7 +69,6 @@ public class DirectorDBStorage implements DirectorStorage {
     }
 
     private Director makeDirector(ResultSet resultSet) throws SQLException {
-        int directorId = resultSet.getInt("director_id");
-        return new Director(directorId, resultSet.getString("director_name"));
+        return new Director(resultSet.getInt("director_id"), resultSet.getString("director_name"));
     }
 }

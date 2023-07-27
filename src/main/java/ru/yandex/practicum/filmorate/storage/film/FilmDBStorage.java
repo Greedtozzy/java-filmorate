@@ -39,7 +39,7 @@ public class FilmDBStorage implements FilmStorage {
     public Film getFilmById(int id) {
         try {
             List<Film> films = jdbcTemplate.queryForObject(sql + "WHERE f.film_id = ?", filmRowMapper(), id);
-            return films.get(0);
+            return Objects.requireNonNull(films).get(0);
         } catch (EmptyResultDataAccessException e) {
             throw new FilmNotFoundException(String.format("Film id %d not found", id));
         }
@@ -49,7 +49,7 @@ public class FilmDBStorage implements FilmStorage {
     public List<Film> getListAllFilms() {
         try {
             List<Film> films = jdbcTemplate.queryForObject(sql, filmRowMapper());
-            films.sort(Comparator.comparing(Film::getId));
+            Objects.requireNonNull(films).sort(Comparator.comparing(Film::getId));
             return films;
         } catch (EmptyResultDataAccessException e) {
             return new ArrayList<>();
@@ -61,8 +61,8 @@ public class FilmDBStorage implements FilmStorage {
         try {
             List<Film> userFilms = jdbcTemplate.queryForObject(sql + "WHERE l.user_id = ?", filmRowMapper(), userId);
             List<Film> friendFilms = jdbcTemplate.queryForObject(sql + "WHERE l.user_id = ?", filmRowMapper(), friendId);
-            return userFilms.stream()
-                    .filter(friendFilms::contains)
+            return Objects.requireNonNull(userFilms).stream()
+                    .filter(Objects.requireNonNull(friendFilms)::contains)
                     .distinct()
                     .collect(Collectors.toList());
         } catch (EmptyResultDataAccessException e) {
@@ -107,7 +107,7 @@ public class FilmDBStorage implements FilmStorage {
             stmt.setLong(6, film.getMpa().getId());
             return stmt;
         }, keyHolder);
-        film.setId(keyHolder.getKey().intValue());
+        film.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
 
         addFilmGenres(film);
         saveDirectors(film);
@@ -189,7 +189,7 @@ public class FilmDBStorage implements FilmStorage {
     public List<Film> topFilms(int count) {
         List<Film> films = jdbcTemplate.queryForObject(sql + "order by film_rating desc", filmRowMapper());
         List<Film> top = new ArrayList<>();
-        if (count > films.size()) {
+        if (count > Objects.requireNonNull(films).size()) {
             count = films.size();
         }
         for (int i = 0; i < count; i++) {
@@ -206,7 +206,7 @@ public class FilmDBStorage implements FilmStorage {
         try {
             filmsFromDataBase = jdbcTemplate.queryForObject(sql + "where extract(YEAR from f.film_release_date) = ? " +
                     "order by film_rating desc", filmRowMapper(), year);
-            for (Film film : filmsFromDataBase) {
+            for (Film film : Objects.requireNonNull(filmsFromDataBase)) {
                 filmsFinal.add(getFilmById(film.getId()));
             }
             return filmsFinal;
@@ -223,7 +223,7 @@ public class FilmDBStorage implements FilmStorage {
         try {
             filmsFromDataBase = jdbcTemplate.queryForObject(sql + "where g.genre_id = ? " +
                     "order by film_rating desc", filmRowMapper(), genreId);
-            for (Film film : filmsFromDataBase) {
+            for (Film film : Objects.requireNonNull(filmsFromDataBase)) {
                 filmsFinal.add(getFilmById(film.getId()));
             }
             return filmsFinal;
@@ -240,7 +240,7 @@ public class FilmDBStorage implements FilmStorage {
         try {
             filmsFromDataBase = jdbcTemplate.queryForObject(sql + "where g.genre_id = ? and extract(YEAR from f.film_release_date) = ? " +
                     "order by film_rating desc", filmRowMapper(), genreId, year);
-            for (Film film : filmsFromDataBase) {
+            for (Film film : Objects.requireNonNull(filmsFromDataBase)) {
                 filmsFinal.add(getFilmById(film.getId()));
             }
             return filmsFinal;

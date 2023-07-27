@@ -19,6 +19,7 @@ import java.sql.PreparedStatement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @Qualifier("eventStorage")
@@ -42,7 +43,7 @@ public class EventStorage {
                 return stmt;
             }, keyHolder);
 
-            event.setEventId(keyHolder.getKey().intValue());
+            event.setEventId(Objects.requireNonNull(keyHolder.getKey()).intValue());
 
             return event;
         } catch (DataIntegrityViolationException e) {
