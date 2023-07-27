@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.EventNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventOperation;
+import ru.yandex.practicum.filmorate.model.EventType;
 
 import java.sql.PreparedStatement;
 import java.time.Instant;
@@ -24,7 +26,7 @@ import java.util.List;
 public class EventStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    public Event addEvent(int entityId, String eventType, String operation, int userId) {
+    public Event addEvent(int entityId, EventType eventType, EventOperation operation, int userId) {
         String sql = "insert into events (user_id, event_type_id, event_operation_id, entity_id, event_timestamp)" +
                     "values (?, ?, ?, ?, ?)";
         Event event = new Event(0, entityId, eventType, operation, userId, Instant.now().toEpochMilli());
@@ -33,8 +35,8 @@ public class EventStorage {
             jdbcTemplate.update(connection -> {
                 PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"event_id"});
                 stmt.setInt(1, event.getUserId());
-                stmt.setInt(2, eventTypeId(event.getEventType()));
-                stmt.setInt(3, eventOperationId(event.getOperation()));
+                stmt.setInt(2, eventTypeToId(event.getEventType()));
+                stmt.setInt(3, eventOperationToId(event.getOperation()));
                 stmt.setInt(4, event.getEntityId());
                 stmt.setLong(5, event.getTimestamp());
                 return stmt;
@@ -50,8 +52,8 @@ public class EventStorage {
 
     public List<Event> getAllEvents(int id) {
         try {
-            String sql = "select event_id, user_id, et.event_type_name, " +
-                    "eo.event_operation_name, entity_id, event_timestamp " +
+            String sql = "select event_id, user_id, et.event_type_id, " +
+                    "eo.event_operation_id, entity_id, event_timestamp " +
                     "from events e " +
                     "join event_types et on e.event_type_id = et.event_type_id " +
                     "join event_operations eo on e.event_operation_id = eo.event_operation_id " +
@@ -68,8 +70,8 @@ public class EventStorage {
             do {
                 events.add(new Event(rs.getInt("event_id"),
                         rs.getInt("entity_id"),
-                        rs.getString("event_type_name"),
-                        rs.getString("event_operation_name"),
+                        eventIdToType(rs.getInt("event_type_id")),
+                        eventIdToOperation(rs.getInt("event_operation_id")),
                         rs.getInt("user_id"),
                         rs.getLong("event_timestamp")));
             } while (rs.next());
@@ -77,21 +79,39 @@ public class EventStorage {
         };
     }
 
-    private int eventTypeId(String type) {
+    private int eventTypeToId(EventType type) {
         switch (type) {
-            case "LIKE": return 1;
-            case "REVIEW": return 2;
-            case "FRIEND": return 3;
+            case LIKE: return 1;
+            case REVIEW: return 2;
+            case FRIEND: return 3;
             default: throw new EventNotFoundException(String.format("Event type %s not found", type));
         }
     }
 
-    private int eventOperationId(String operation) {
+    private EventType eventIdToType(int id) {
+        switch (id) {
+            case 1: return EventType.LIKE;
+            case 2: return EventType.REVIEW;
+            case 3: return EventType.FRIEND;
+            default: throw new EventNotFoundException(String.format("Event type id %d not found", id));
+        }
+    }
+
+    private int eventOperationToId(EventOperation operation) {
         switch (operation) {
-            case "REMOVE": return 1;
-            case "ADD": return 2;
-            case "UPDATE": return 3;
+            case REMOVE: return 1;
+            case ADD: return 2;
+            case UPDATE: return 3;
             default: throw new EventNotFoundException(String.format("Event operation %s not found", operation));
+        }
+    }
+
+    private EventOperation eventIdToOperation(int id) {
+        switch (id) {
+            case 1: return EventOperation.REMOVE;
+            case 2: return EventOperation.ADD;
+            case 3: return EventOperation.UPDATE;
+            default: throw new EventNotFoundException(String.format("Event operation id %d not found", id));
         }
     }
 }

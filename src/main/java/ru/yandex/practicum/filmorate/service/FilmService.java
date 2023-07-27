@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.EventOperation;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -41,15 +43,28 @@ public class FilmService {
 
     public void addLike(int userId, int filmId) {
         filmStorage.addLike(userId, filmId);
-        eventStorage.addEvent(filmId, "LIKE", "ADD", userId);
+        eventStorage.addEvent(filmId, EventType.LIKE, EventOperation.ADD, userId);
     }
 
     public void deleteLike(int userId, int filmId) {
         filmStorage.deleteLike(userId, filmId);
-        eventStorage.addEvent(filmId, "LIKE", "REMOVE", userId);
+        eventStorage.addEvent(filmId, EventType.LIKE, EventOperation.REMOVE, userId);
     }
 
-    public List<Film> topFilms(int count) {
+    public List<Film> getTopFilms(int count, Integer genreId, Integer year) {
+        if (genreId == null && year == null) {
+            return topFilms(count);
+        }
+        if (genreId == null) {
+            return topFilmsByYear(count, year);
+        }
+        if (year == null) {
+            return topFilmsByGenre(count, genreId);
+        }
+        return topFilmsByYearAndGenre(count, year, genreId);
+    }
+
+    private List<Film> topFilms(int count) {
         return filmStorage.topFilms(count);
     }
 
@@ -57,15 +72,15 @@ public class FilmService {
         return filmStorage.searchFilms(query, by);
     }
 
-    public List<Film> topFilmsByYear(int count, int year) {
+    private List<Film> topFilmsByYear(int count, int year) {
         return filmStorage.topFilmsByYear(count, year);
     }
 
-    public List<Film> topFilmsByGenre(int count, int genreId) {
+    private List<Film> topFilmsByGenre(int count, int genreId) {
         return filmStorage.topFilmsByGenre(count, genreId);
     }
 
-    public List<Film> topFilmsByYearAndGenre(int count, int year, int genreId) {
+    private List<Film> topFilmsByYearAndGenre(int count, int year, int genreId) {
         return filmStorage.topFilmsByYearAndGenre(count, year, genreId);
     }
 

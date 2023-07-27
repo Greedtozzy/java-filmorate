@@ -66,24 +66,9 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<Film> getTopFilms(@RequestParam(value = "count", defaultValue = "10", required = false) int count,
-                                  @RequestParam(value = "genreId", defaultValue = "0", required = false) int genreId,
-                                  @RequestParam(value = "year", defaultValue = "0", required = false) int year) {
-
-        if (genreId > 0 && year <= 0) {
-            log.debug("Top {} films by genre id {}", count, genreId);
-            return filmService.topFilmsByGenre(count, genreId);
-        }
-        if (genreId <= 0 && year > 0) {
-            log.debug("Top {} films by year {}", count, year);
-            return filmService.topFilmsByYear(count, year);
-        }
-        if (genreId > 0 && year > 0) {
-            log.debug("Top {} films by year {} and genre id {}", count, year, genreId);
-            return filmService.topFilmsByYearAndGenre(count, year, genreId);
-        } else {
-            log.debug("Top {} films", count);
-            return filmService.topFilms(count);
-        }
+                                  @RequestParam(value = "genreId", required = false) Integer genreId,
+                                  @RequestParam(value = "year", required = false) Integer year) {
+        return filmService.getTopFilms(count, genreId, year);
     }
 
     @GetMapping("/common")

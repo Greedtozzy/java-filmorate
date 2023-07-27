@@ -5,14 +5,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
+import javax.validation.constraints.NotNull;
+
 @Data
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Event {
+    @NotNull
     int eventId;
+    @NotNull
     int entityId;
-    String eventType;
-    String operation;
+    @NotNull
+    EventType eventType;
+    @NotNull
+    EventOperation operation;
+    @NotNull
     int userId;
+    @NotNull
     long timestamp;
 }
