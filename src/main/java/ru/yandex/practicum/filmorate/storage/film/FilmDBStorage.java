@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.enums.SortBy;
 import ru.yandex.practicum.filmorate.storage.director.DirectorDBStorage;
 
 import java.sql.Date;
@@ -71,15 +72,15 @@ public class FilmDBStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getAllFilmsByDirectorId(int directorId, String sortBy) {
+    public List<Film> getAllFilmsByDirectorId(int directorId, SortBy sortBy) {
         directorDBStorage.getDirectorById(directorId);
         try {
             switch (sortBy) {
-                case "year":
+                case year:
                     return jdbcTemplate.queryForObject(sql +
                                     "where fd.director_id = ? order by f.film_release_date",
                             filmRowMapper(), directorId);
-                case "likes":
+                case likes:
                     return jdbcTemplate.queryForObject(sql +
                                     "where fd.director_id = ? order by f.film_rating desc",
                             filmRowMapper(), directorId);
@@ -252,47 +253,25 @@ public class FilmDBStorage implements FilmStorage {
 
     @Override
     public List<Film> searchFilms(String query, String by) {
-        List<Film> films = getListAllFilms();
-
-        switch (by) {
-            case "title":
-                return films.stream()
-                        .filter(film -> film.getName().toLowerCase().contains(query.toLowerCase()))
-                        .sorted(Comparator.comparing(Film::getRate).reversed())
-                        .collect(Collectors.toList());
-            case "director":
-                return films.stream()
-                        .filter(film -> {
-                            boolean isContains = false;
-                            for (Director director : film.getDirectors()) {
-                                if (director.getName().toLowerCase().contains(query.toLowerCase())) {
-                                    isContains = true;
-                                    break;
-                                }
-                            }
-                            return isContains;
-                        })
-                        .sorted(Comparator.comparing(Film::getRate).reversed())
-                        .collect(Collectors.toList());
-            case "title,director":
-            case "director,title":
-                return films.stream()
-                        .filter(film -> {
-                            if (film.getName().toLowerCase().contains(query.toLowerCase())) {
-                                return true;
-                            }
-                            boolean isContains = false;
-                            for (Director director : film.getDirectors()) {
-                                if (director.getName().toLowerCase().contains(query.toLowerCase())) {
-                                    isContains = true;
-                                    break;
-                                }
-                            }
-                            return isContains;
-                        })
-                        .sorted(Comparator.comparing(Film::getRate).reversed())
-                        .collect(Collectors.toList());
-            default: return new ArrayList<>();
+        try {
+            String like = "%" + query.toLowerCase(Locale.ENGLISH) + "%";
+            String sqlBy;
+            switch (by) {
+                case "title":
+                    sqlBy = sql + " where lower(film_name) like ? order by film_rating desc";
+                    return jdbcTemplate.queryForObject(sqlBy, filmRowMapper(), like);
+                case "director":
+                    sqlBy = sql + " where lower(director_name) like ? order by film_rating desc";
+                    return jdbcTemplate.queryForObject(sqlBy, filmRowMapper(), like);
+                case "title,director":
+                case "director,title":
+                    sqlBy = sql + " where lower(director_name) like ? or lower(film_name) like ? order by film_rating desc";
+                    return jdbcTemplate.queryForObject(sqlBy, filmRowMapper(), like, like);
+                default:
+                    return new ArrayList<>();
+            }
+        } catch (EmptyResultDataAccessException e) {
+            return new ArrayList<>();
         }
     }
 

@@ -2,9 +2,10 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.EventOperation;
-import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.enums.EventOperation;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.SortBy;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
@@ -21,7 +22,7 @@ public class FilmService {
         return filmStorage.getListAllFilms();
     }
 
-    public List<Film> getAllFilmsByDirectorId(int directorId, String sortBy) {
+    public List<Film> getAllFilmsByDirectorId(int directorId, SortBy sortBy) {
         return filmStorage.getAllFilmsByDirectorId(directorId, sortBy);
     }
 

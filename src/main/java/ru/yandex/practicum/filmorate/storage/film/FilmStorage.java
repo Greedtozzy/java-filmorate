@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.SortBy;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ public interface FilmStorage {
 
     List<Film> getListAllFilms();
 
-    List<Film> getAllFilmsByDirectorId(int directorId, String sortBy);
+    List<Film> getAllFilmsByDirectorId(int directorId, SortBy sortBy);
 
     Film addFilm(Film film);
 

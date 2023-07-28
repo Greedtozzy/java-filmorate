@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.SortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -23,7 +24,7 @@ public class FilmController {
     }
 
     @GetMapping ("/director/{directorId}")
-    public List<Film> getAllFilmsByDirectorId(@PathVariable int directorId, @RequestParam(value = "sortBy") String sortBy) {
+    public List<Film> getAllFilmsByDirectorId(@PathVariable int directorId, @RequestParam(value = "sortBy") SortBy sortBy) {
         log.debug("Film's list: {}", filmService.getAllFilmsByDirectorId(directorId,sortBy));
         return filmService.getAllFilmsByDirectorId(directorId,sortBy);
     }

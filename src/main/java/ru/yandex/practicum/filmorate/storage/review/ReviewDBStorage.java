@@ -151,6 +151,9 @@ public class ReviewDBStorage implements ReviewStorage {
         };
     }
 
+    /** Попробовали предложенную вами реализацию. В механике разобрались, но она не работает в нашем случае.
+     * При суммировании логических значений, false берется как 0, а нам необходимо, чтобы значение было -1.
+     * В любом случае спасибо за подсказку.*/
     @Override
     public Review addLikeToReview(int reviewId, int userId) {
         if (getReviewById(reviewId).getLikes().containsKey(userId)) {
