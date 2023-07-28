@@ -171,7 +171,7 @@ public class UserDBStorage implements UserStorage {
                     "join likes l2 on (l.user_id != l2.user_id and l.film_id = l2.film_id) " +
                     "join users u on (l2.user_id != u.user_id) " +
                     "where l.user_id = ? " +
-                    "group by l2.user_id having count(l2.film_id) > 1 order by count(l2.film_id) desc limit 1";
+                    "group by l2.user_id having count(l2.film_id) > 1 order by count(l2.film_id) desc limit 10";
             return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getInt("USER_ID"), userId);
         } catch (EmptyResultDataAccessException e) {
             return new ArrayList<>();
