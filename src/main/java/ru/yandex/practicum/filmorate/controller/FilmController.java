@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.SortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -11,17 +13,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 @Slf4j
+@AllArgsConstructor
 public class FilmController {
     private final FilmService filmService;
-
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
 
     @GetMapping
     public List<Film> allFilms() {
         log.debug("Film's list: {}", filmService.getListAllFilms());
         return filmService.getListAllFilms();
+    }
+
+    @GetMapping ("/director/{directorId}")
+    public List<Film> getAllFilmsByDirectorId(@PathVariable int directorId, @RequestParam(value = "sortBy") SortBy sortBy) {
+        log.debug("Film's list: {}", filmService.getAllFilmsByDirectorId(directorId,sortBy));
+        return filmService.getAllFilmsByDirectorId(directorId,sortBy);
     }
 
     @PostMapping
@@ -61,12 +66,21 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getTopFilms(@RequestParam(value = "count", defaultValue = "10", required = false) int count) {
-        log.debug("Top {} films", count);
-        return filmService.topFilms(count);
+    public List<Film> getTopFilms(@RequestParam(value = "count", defaultValue = "10", required = false) int count,
+                                  @RequestParam(value = "genreId", required = false) Integer genreId,
+                                  @RequestParam(value = "year", required = false) Integer year) {
+        return filmService.getTopFilms(count, genreId, year);
     }
 
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam(value = "userId") int userId, @RequestParam(value = "friendId") int friendId) {
+        log.debug("Common films user id {} and user id {}", userId, friendId);
+        return filmService.getCommonFilms(userId,friendId);
+    }
 
-
-
+    @GetMapping("/search")
+    public List<Film> searchFilms(@RequestParam(value = "query") String query, @RequestParam(value = "by") String by) {
+        log.debug("Search films by {} and query {}", by, query);
+        return filmService.searchFilms(query, by);
+    }
 }

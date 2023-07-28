@@ -1,28 +1,24 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.AllArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmDBStorage;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-@Qualifier("userDBStorage")
+@AllArgsConstructor
 public class UserDBStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    public UserDBStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final FilmDBStorage filmDBStorage;
 
     @Override
     public User getUserById(int id) {
@@ -80,17 +76,15 @@ public class UserDBStorage implements UserStorage {
         return user;
     }
 
-/** По моему мнению, список лайков и друзей не должен обновляться при изменении данных пользователя.
- * Если требуется учитывать и их тоже, то исправлю.*/
     @Override
     public User updateUser(User user) {
         getUserById(user.getId());
         jdbcTemplate.update("UPDATE users " +
-                "SET user_name = ?, " +
-                "user_login = ?, " +
-                "user_email = ?, " +
-                "user_birthday = ? " +
-                "WHERE user_id = ?",
+                        "SET user_name = ?, " +
+                        "user_login = ?, " +
+                        "user_email = ?, " +
+                        "user_birthday = ? " +
+                        "WHERE user_id = ?",
                 user.getName(),
                 user.getLogin(),
                 user.getEmail(),
@@ -120,6 +114,7 @@ public class UserDBStorage implements UserStorage {
 
     @Override
     public List<User> listAllFriends(int id) {
+        getUserById(id);
         try {
             return jdbcTemplate.queryForObject("SELECT u.user_id, u.user_name, u.user_login, " +
                     "u.user_email, u.user_birthday, f2.user2_id from friendships f " +
@@ -156,5 +151,45 @@ public class UserDBStorage implements UserStorage {
             } while (rs.next());
             return users;
         };
+    }
+
+    @Override
+    public List<Film> getRecommendations(int id) {
+        User user = getUserById(id);
+        if (getUsersWithSameLikes(id).isEmpty()) return new ArrayList<>();
+        User mostCrossUser = getUserById(getUsersWithSameLikes(id).get(0));
+        return likesFromUser(mostCrossUser).stream()
+                .filter(i -> !likesFromUser(user).contains(i))
+                .map(filmDBStorage::getFilmById)
+                .collect(Collectors.toList());
+    }
+
+    private List<Integer> getUsersWithSameLikes(int userId) {
+        try {
+            final String sqlQuery = "select l2.user_id, count(l2.film_id) " +
+                    "from likes l " +
+                    "join likes l2 on (l.user_id != l2.user_id and l.film_id = l2.film_id) " +
+                    "join users u on (l2.user_id != u.user_id) " +
+                    "where l.user_id = ? " +
+                    "group by l2.user_id having count(l2.film_id) > 1 order by count(l2.film_id) desc limit 10";
+            return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getInt("USER_ID"), userId);
+        } catch (EmptyResultDataAccessException e) {
+            return new ArrayList<>();
+        }
+    }
+
+    private List<Integer> likesFromUser(User user) {
+        try {
+            return jdbcTemplate.queryForObject("select film_id from likes where user_id = ?",
+                    (rs, rowNum) -> {
+                        List<Integer> l = new ArrayList<>();
+                        do {
+                            l.add(rs.getInt("film_id"));
+                        } while (rs.next());
+                        return l;
+                    }, user.getId());
+        } catch (EmptyResultDataAccessException e) {
+            return new ArrayList<>();
+        }
     }
 }
