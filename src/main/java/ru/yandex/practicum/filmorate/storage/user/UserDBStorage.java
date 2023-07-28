@@ -156,28 +156,26 @@ public class UserDBStorage implements UserStorage {
     @Override
     public List<Film> getRecommendations(int id) {
         User user = getUserById(id);
-        User mostCrossUser = null;
-        List<Integer> likes = likesFromUser(user);
-        List<User> users = getListAllUsers();
-        int count = 0;
-        for (User u : users) {
-            if (!u.equals(user)) {
-                List<Integer> uLikes = likesFromUser(u);
-                int uCount = (int) likes.stream()
-                        .filter(uLikes::contains).count();
-                if (uCount > count) {
-                    count = uCount;
-                    mostCrossUser = u;
-                }
-            }
-        }
-        if (mostCrossUser == null) {
-            return new ArrayList<>();
-        }
+        if (getUsersWithSameLikes(id).isEmpty()) return new ArrayList<>();
+        User mostCrossUser = getUserById(getUsersWithSameLikes(id).get(0));
         return likesFromUser(mostCrossUser).stream()
                 .filter(i -> !likesFromUser(user).contains(i))
                 .map(filmDBStorage::getFilmById)
                 .collect(Collectors.toList());
+    }
+
+    private List<Integer> getUsersWithSameLikes(int userId) {
+        try {
+            final String sqlQuery = "select l2.user_id, count(l2.film_id) " +
+                    "from likes l " +
+                    "join likes l2 on (l.user_id != l2.user_id and l.film_id = l2.film_id) " +
+                    "join users u on (l2.user_id != u.user_id) " +
+                    "where l.user_id = ? " +
+                    "group by l2.user_id having count(l2.film_id) > 1 order by count(l2.film_id) desc limit 1";
+            return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getInt("USER_ID"), userId);
+        } catch (EmptyResultDataAccessException e) {
+            return new ArrayList<>();
+        }
     }
 
     private List<Integer> likesFromUser(User user) {

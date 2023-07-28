@@ -16,7 +16,6 @@ public class Review {
     @NotNull
     int reviewId;
     @NotBlank
-    @NotNull
     String content;
     @NotNull
     Boolean isPositive;
@@ -27,13 +26,4 @@ public class Review {
     int useful;
     @JsonIgnore
     final transient Map<Integer, Boolean> likes = new HashMap<>();
-
-
-    public void setIsPositive(boolean isPositive) {
-        this.isPositive = isPositive;
-    }
-
-    public boolean getIsPositive() {
-        return isPositive;
-    }
 }

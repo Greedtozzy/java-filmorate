@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.SortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -23,7 +24,7 @@ public class FilmController {
     }
 
     @GetMapping ("/director/{directorId}")
-    public List<Film> getAllFilmsByDirectorId(@PathVariable int directorId, @RequestParam(value = "sortBy") String sortBy) {
+    public List<Film> getAllFilmsByDirectorId(@PathVariable int directorId, @RequestParam(value = "sortBy") SortBy sortBy) {
         log.debug("Film's list: {}", filmService.getAllFilmsByDirectorId(directorId,sortBy));
         return filmService.getAllFilmsByDirectorId(directorId,sortBy);
     }
@@ -66,24 +67,9 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<Film> getTopFilms(@RequestParam(value = "count", defaultValue = "10", required = false) int count,
-                                  @RequestParam(value = "genreId", defaultValue = "0", required = false) int genreId,
-                                  @RequestParam(value = "year", defaultValue = "0", required = false) int year) {
-
-        if (genreId > 0 && year <= 0) {
-            log.debug("Top {} films by genre id {}", count, genreId);
-            return filmService.topFilmsByGenre(count, genreId);
-        }
-        if (genreId <= 0 && year > 0) {
-            log.debug("Top {} films by year {}", count, year);
-            return filmService.topFilmsByYear(count, year);
-        }
-        if (genreId > 0 && year > 0) {
-            log.debug("Top {} films by year {} and genre id {}", count, year, genreId);
-            return filmService.topFilmsByYearAndGenre(count, year, genreId);
-        } else {
-            log.debug("Top {} films", count);
-            return filmService.topFilms(count);
-        }
+                                  @RequestParam(value = "genreId", required = false) Integer genreId,
+                                  @RequestParam(value = "year", required = false) Integer year) {
+        return filmService.getTopFilms(count, genreId, year);
     }
 
     @GetMapping("/common")

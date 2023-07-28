@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.enums.EventOperation;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
@@ -16,19 +18,19 @@ public class ReviewService {
 
     public Review addReview(Review review) {
         Review newReview = reviewStorage.addReview(review);
-        eventStorage.addEvent(newReview.getReviewId(), "REVIEW", "ADD", newReview.getUserId());
+        eventStorage.addEvent(newReview.getReviewId(), EventType.REVIEW, EventOperation.ADD, newReview.getUserId());
         return newReview;
     }
 
     public Review updateReview(Review review) {
         Review updatedReview = reviewStorage.updateReview(review);
-        eventStorage.addEvent(updatedReview.getReviewId(), "REVIEW", "UPDATE", updatedReview.getUserId());
+        eventStorage.addEvent(updatedReview.getReviewId(), EventType.REVIEW, EventOperation.UPDATE, updatedReview.getUserId());
         return updatedReview;
     }
 
     public void deleteReview(int id) {
         Review review = reviewStorage.getReviewById(id);
-        eventStorage.addEvent(review.getReviewId(), "REVIEW", "REMOVE", review.getUserId());
+        eventStorage.addEvent(review.getReviewId(), EventType.REVIEW, EventOperation.REMOVE, review.getUserId());
         reviewStorage.deleteReview(id);
     }
 
