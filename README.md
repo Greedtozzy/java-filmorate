@@ -51,7 +51,7 @@ Template repository for Filmorate project.
 #### API:
 - GET /films/popular?count={limit}&genreId={genreId}&year={year} — Возвращает список самых популярных фильмов указанного жанра за нужный год.
 
-### Рекомендации фильмов для пользавотелей
+### Рекомендации фильмов для пользователей
 #### API:
 - GET /users/{id}/recommendations — Возвращает рекомендации по фильмам для просмотра.
 
